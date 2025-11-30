@@ -7,7 +7,7 @@ MigrationExp è un approccio basato su *learning-to-rank* progettato per support
 
 ---
 
-## How We Use AI Agents for COBOL Migration and Mainframe Modernization (https://devblogs.microsoft.com/all-things-azure/how-we-use-ai-agents-for-cobol-migration-and-mainframe-modernization/)
+## [How We Use AI Agents for COBOL Migration and Mainframe Modernization](https://devblogs.microsoft.com/all-things-azure/how-we-use-ai-agents-for-cobol-migration-and-mainframe-modernization/)
 
 Il COBOL Agentic Migration Factory (CAMF) è un approccio sviluppato da Microsoft in collaborazione con Bankdata per automatizzare la modernizzazione di sistemi mainframe COBOL verso Java/Quarkus mediante agenti AI orchestrati con Microsoft Semantic Kernel. Il framework nasce dall'esigenza di migrare oltre 70 milioni di righe di codice mantenendo il controllo sulla proprietà intellettuale e riducendo i costi rispetto ai partner esterni.
 
@@ -20,7 +20,6 @@ L'approccio si articola in tre fasi: Preparazione (reverse engineering, pulizia 
 Il COBOLAnalyzerAgent estrae semantica del codice mediante prompt AI (struttura programma, variabili, flussi procedurali, statement SQL/DB2, dipendenze copybook), configurato per analisi deterministica su programmi di grandi dimensioni. Il DependencyMapperAgent costruisce il grafo architetturale attraverso due prompt: il primo genera diagrammi Mermaid visualizzando dipendenze con subgraph dinamici; il secondo identifica pattern di data flow, dipendenze circolari e metriche quantitative (complessità, dipendenze medie) che guidano la prioritizzazione della migrazione. Il JavaConverterAgent trasforma il COBOL in Java Quarkus production-ready, gestendo costrutti specifici (PERFORM, GOTO) con cicli strutturati moderni invece di replicare la struttura originale ("JOBOL"), implementando retry logic, sanitizzazione contenuti e parsing intelligente.
 Il flusso operativo segue una pipeline sequenziale: (1) scoperta file COBOL/copybook, (2) analisi struttura, (3) mapping dipendenze, (4) conversione a Java, (5) generazione report. L'uso di modelli reasoning come GPT-4.1 garantisce che il codice Java preservi accuratamente la logica business originale. Gli autori evidenziano però che non tutto il COBOL è ugualmente migrabile: moduli legati a comportamenti non funzionali del mainframe (throughput batch, I/O, orchestrazione JCL) richiedono spesso ripensamento architetturale oltre alla conversione. Il progetto è open-source su GitHub con prompt personalizzabili per casi d'uso specifici.
 
-Link di riferimento:
 Repository GitHub: https://github.com/Azure-Samples/Legacy-Modernization-Agents
 Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-agents-for-cobol-migration-and-mainframe-modernization/
 
@@ -31,8 +30,13 @@ propone un'architettura ibrida per la migrazione COBOL→Java che combina parsin
 
 ---
 ## [Reforge-AI](https://genmind.ch/posts/Using-Agentic-AI-To-Modernize-Large-Scale-Code/) 
-è un sistema agente AI (basato su GPT-4) che modernizza automaticamente codebase Java legacy verso framework come Spring Boot, operando in due fasi: (1) **Analisi e Documentazione** tramite `gen_docs.py` che genera documentazione dettagliata e un piano `plan.yaml` soggetto a revisione umana, (2) **Trasformazione** tramite `gen_modern.py` che esegue refactoring automatizzato (conversione EJB→Spring Services, migrazione JSP→template moderni, aggiornamento dipendenze Maven, applicazione pattern OWASP, generazione test), richiedendo intervento umano per revisione del piano, validazione delle modifiche e verifica dei risultati. Il sistema utilizza un approccio multi-agente con loop di feedback iterativo dove ingegneri rivedono la documentazione auto-generata e gli agenti ri-renderizzano diagrammi Mermaid e testo aggiornati,
-Per il feedback utilizzato nella sua archiettura, gli AI agents si interpretano come membri del team piuttosto che semplici strumenti di autocompletamento, rendendo l'approccio semi automatizzato.
+è un sistema agente AI (basato su GPT-4) che modernizza automaticamente codebase Java legacy verso framework come Spring Boot, operando in due fasi: 
+
+(1) **Analisi e Documentazione** tramite `gen_docs.py` che genera documentazione dettagliata e un piano `plan.yaml` soggetto a revisione umana
+
+(2) **Trasformazione** tramite `gen_modern.py` che esegue refactoring automatizzato (conversione EJB→Spring Services, migrazione JSP→template moderni, aggiornamento dipendenze Maven, applicazione pattern OWASP, generazione test), richiedendo intervento umano per revisione del piano, validazione delle modifiche e verifica dei risultati. Il sistema utilizza un approccio multi-agente con loop di feedback iterativo dove ingegneri rivedono la documentazione auto-generata e gli agenti ri-renderizzano diagrammi Mermaid e testo aggiornati.
+
+Per il feedback utilizzato nella sua archiettura, gli AI agents si interpretano come membri del team piuttosto che strumenti di autocompletamento, rendendo l'approccio semi automatizzato.
 
 
 
@@ -50,8 +54,11 @@ LLM trainato su codice COBOL per la modernizzazione dei sistemi legacy.
 GPT-Migrate è un tool open-source che usa GPT-4 per migrare automaticamente un codebase da un linguaggio/framework a un altro
 
 Aspetti negativi: 
+
 1.Funziona bene solo su linguaggi semplici
+
 2.Non e’ robusto come codice
+
 3,In letteratura non ci sono grossi riferimenti sul suo utilizzo
 
 -------------------------
