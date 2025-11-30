@@ -26,10 +26,13 @@ Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-
 
 
 ---
-## [Code Reborn](https://arxiv.org/pdf/2504.11335) propone un'architettura ibrida per la migrazione COBOL→Java che combina parsing strutturale tramite ANTLR (per generare l'Abstract Syntax Tree) con un modello LSTM a 3 layer che suggerisce trasformazioni semantiche del codice. Il sistema include un'interfaccia React per visualizzare i miglioramenti attraverso dashboard, grafici e rappresentazioni AST interattive. L'approccio sfrutta il deep learning per catturare pattern complessi nella traduzione tra linguaggi. Nota critica: il repository GitHub non è disponibile (fare ricerche piu' approfondite sul codice). Il paper si presenta piu' come una sorta di questionario.
+## [Code Reborn](https://arxiv.org/pdf/2504.11335) 
+propone un'architettura ibrida per la migrazione COBOL→Java che combina parsing strutturale tramite ANTLR (per generare l'Abstract Syntax Tree) con un modello LSTM a 3 layer che suggerisce trasformazioni semantiche del codice. Il sistema include un'interfaccia React per visualizzare i miglioramenti attraverso dashboard, grafici e rappresentazioni AST interattive. L'approccio sfrutta il deep learning per catturare pattern complessi nella traduzione tra linguaggi. Nota critica: il repository GitHub non è disponibile (fare ricerche piu' approfondite sul codice). Il paper si presenta piu' come una sorta di questionario.
 
 ---
-## [Reforge-AI](https://genmind.ch/posts/Using-Agentic-AI-To-Modernize-Large-Scale-Code/) è un sistema agente AI (basato su GPT-4) che modernizza automaticamente codebase Java legacy verso framework moderni come Spring Boot, operando in due fasi: (1) **Analisi e Documentazione** tramite `gen_docs.py` che genera documentazione dettagliata e un piano `plan.yaml` soggetto a revisione umana, (2) **Trasformazione** tramite `gen_modern.py` che esegue refactoring automatizzato (conversione EJB→Spring Services, migrazione JSP→template moderni, aggiornamento dipendenze Maven, applicazione pattern OWASP, generazione test), richiedendo intervento umano per revisione del piano, validazione delle modifiche e verifica dei risultati. Il sistema utilizza un approccio multi-agente con loop di feedback iterativo dove ingegneri rivedono la documentazione auto-generata e gli agenti ri-renderizzano diagrammi Mermaid e testo aggiornati, riflettendo il paradigma degli AI agents come membri del team piuttosto che semplici strumenti di autocompletamento.
+## [Reforge-AI](https://genmind.ch/posts/Using-Agentic-AI-To-Modernize-Large-Scale-Code/) 
+è un sistema agente AI (basato su GPT-4) che modernizza automaticamente codebase Java legacy verso framework come Spring Boot, operando in due fasi: (1) **Analisi e Documentazione** tramite `gen_docs.py` che genera documentazione dettagliata e un piano `plan.yaml` soggetto a revisione umana, (2) **Trasformazione** tramite `gen_modern.py` che esegue refactoring automatizzato (conversione EJB→Spring Services, migrazione JSP→template moderni, aggiornamento dipendenze Maven, applicazione pattern OWASP, generazione test), richiedendo intervento umano per revisione del piano, validazione delle modifiche e verifica dei risultati. Il sistema utilizza un approccio multi-agente con loop di feedback iterativo dove ingegneri rivedono la documentazione auto-generata e gli agenti ri-renderizzano diagrammi Mermaid e testo aggiornati,
+Per il feedback utilizzato nella sua archiettura, gli AI agents si interpretano come membri del team piuttosto che semplici strumenti di autocompletamento, rendendo l'approccio semi automatizzato.
 
 
 
@@ -37,17 +40,28 @@ Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-
 ## LLM  singoli presenti in letteratura
 -------------------------
 ## [XMainframe: A LARGE LANGUAGE MODEL FOR MAINFRAME MODERNIZATION](https://arxiv.org/pdf/2408.04660)
+
 LLM trainato su codice COBOL per la modernizzazione dei sistemi legacy.
 
 [Github](https://github.com/FSoft-AI4Code/XMainframe)
 
 ## [GPT-MIGRATE](https://github.com/joshpxyne/gpt-migrate)
+
 GPT-Migrate è un tool open-source che usa GPT-4 per migrare automaticamente un codebase da un linguaggio/framework a un altro
 
 Aspetti negativi: 
 1.Funziona bene solo su linguaggi semplici
 2.Non e’ robusto come codice
 3,In letteratura non ci sono grossi riferimenti sul suo utilizzo
+
+-------------------------
+## Analisi di aspetti tecnici sull'utilizzo di metamodelli
+-------------------------
+
+## [GraphCodeBERT - Pre-training Code Representations with Data Flow :utilizzo di GraphCode invece di AST)](https://openreview.net/pdf?id=jLoC4ez43PZ)
+
+GraphCodeBERT usa data flow nella fase di pre-training, che è una struttura a livello semantico del codice che codifica la relazione "da-dove-viene-il-valore" tra variabili. Tale struttura a livello semantico è meno complessa e non porta una gerarchia inutilmente profonda di AST, proprietà che rende il modello più efficiente
+
 
 
 ## 
