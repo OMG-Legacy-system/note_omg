@@ -73,3 +73,57 @@ GraphCodeBERT usa data flow nella fase di pre-training, che è una struttura a l
 
 
 ## 
+-------------------------
+## Survey per la generazione di dati sintetici
+
+Questo approccio puo' essere utilizzato nel caso di fine-tuning di modelli LLM.
+Se si dovessere pensare alla soluzione come un agente AI, composto da vari LLM, queste tecniche ci risulterebbero utili per fine-tunare i vari LLM con dati sintetici.
+
+
+---
+## [Synthetic Data Generation Using Large Language Models: Advances in Text and Code](https://xplorestaging.ieee.org/ielx8/6287639/10820123/11080380.pdf?arnumber=11080380&utm_source=scopus&getft_integrator=scopus&tag=1&tag=1)
+
+Questo paper è una survey completa che analizza come i Large Language Models vengono utilizzati per generare dati sintetici sia per task di linguaggio naturale che di programmazione. La survey copre tecniche, risultati empirici e sfide (come la qualità dei dati e il rischio di model collapse) .
+
+
+
+Gli autori hanno seguito il seguente approccio per selezionare i paper:
+
+**Criteri di inclusione:**
+- Paper pubblicati tra gennaio 2020 e aprile 2025 (periodo boom degli LLM)
+- Focus su synthetic data generation, data augmentation o instruction tuning con LLM
+- Modelli con almeno centinaia di milioni di parametri (GPT-3/4, Claude, Llama, StarCoder, ecc.)
+- Evidenza empirica o innovazione metodologica significativa
+
+**Criteri di esclusione:**
+- Lavori solo su immagini/audio senza metodologia trasferibile a testo/codice
+- Contenuti non peer-reviewed senza rigore metodologico
+- Paper pre-2020 su modelli pre-LLM (eccetto fondamentali)
+
+
+| Tecnica utilizzata | Paper | Sintesi del lavoro |
+|-------------------|-------|-------------------|
+| **Prompt-Based Augmentation** | Li et al. [25] | Dimostrano miglioramenti del 3-26% in accuracy/F1 aggiungendo 100 esempi sintetici GPT-3.5 a 100 esempi reali in low-resource settings |
+| **Retrieval-Augmented Generation** | Chai et al. [9] | Integrano retrieval di passaggi Wikipedia durante la generazione per groundare i dati sintetici e ridurre hallucination |
+| **Topic-Controlled Prompting** | WANLI [32] | Variano sistematicamente il contenuto dei prompt per massimizzare diversità tra subtopic e migliorare generalizzazione |
+| **Randomized Prompting** | AugGPT [35] | Usano prompting randomizzato per creare dataset sintetici con maggiore varietà |
+| **Few-Shot Prompting** | GPT3Mix [31] | Applicano few-shot prompting per generare esempi task-specific con alta precisione di formato |
+| **Instruction-Based Prompting** | Unnatural Instructions [34] | Generano dataset di istruzioni sintetiche per migliorare l'instruction-following dei modelli |
+| **Iterative Generation** | Self-Instruct [29] | Metodo iterativo dove l'LLM genera nuove istruzioni partendo da seed prompts, creando dataset auto-generati |
+| **Feedback-Driven Generation** | SunGen [30] | Focalizzano la generazione su failure cases e model weaknesses usando automated weighting |
+| **Zero-Shot Topic Generation** | Yu et al. [24] | LLM genera prima lista di topic rilevanti, poi produce esempi specifici per ogni topic aumentando diversità |
+| **Quality Filtering** | Ding et al. [3] | Analizzano se GPT-3 è un buon annotatore e sviluppano tecniche per filtrare output sintetici di bassa qualità |
+| **Instruction-Following (Code)** | Code Alpaca [49] | Applicano Self-Instruct al dominio codice creando 20K esempi instruction-solution con ChatGPT |
+| **Evolutionary Code Generation** | WizardCoder [51] | Usano strategia evolutiva (Code Evol-Instruct) per generare iterativamente task di coding sempre più complessi |
+| **GitHub-Based Generation** | Magicoder [52] | Raccolgono snippet da GitHub e generano 75K instruction prompts che portano a quegli snippet come risposte |
+| **Code Translation** | TransCoder - Lachaux et al. [8] | Usano LLM come GPT-4 per tradurre codice tra linguaggi diversi creando coppie parallele high-quality |
+| **Code Refactoring** | Studio con CodeLLaMa-7B [44] | Pipeline di refactoring sistematico (rename, formatting, comments) che migliora performance fino al 30% |
+| **Incremental Edit Generation** | LintSeq [42] | Generano sequenze di edit incrementali con CodeLLaMa-7B per insegnare ai modelli diversità nelle soluzioni |
+| **Problem Solving** | AlphaCode - Microsoft [53] | Fine-tuning di CodeGen per generare candidati multipli a problemi di competitive programming |
+| **RL-Based Algorithm Discovery** | AlphaDev - DeepMind [54] | Reinforcement learning con tecniche AlphaZero per scoprire algoritmi di sorting più efficienti |
+| **Buggy Code Generation** | "LLM-itation" [56] | GPT-4 imita errori tipici di studenti creando buggy code realistico per sistemi di tutoring automatici |
+| **Self-Improvement Code Repair** | Studio con GPT-3 [45] | Modello genera codice, identifica errori via unit tests, li ripara creando coppie (buggy, fixed) |
+| **RL with Execution Feedback** | CodeRL [43] | Usa esecuzione corretta come reward signal per fine-tuning via reinforcement learning |
+| **Standardized Generation Tools** | DataDreamer [64] | Framework per generazione standardizzata e riproducibile di dati sintetici con LLM |
+
+---
