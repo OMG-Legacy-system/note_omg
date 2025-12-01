@@ -6,3 +6,17 @@
 MigrationExp è un approccio basato su *learning-to-rank* progettato per supportare gli sviluppatori nelle **migrazioni incrementali** del codice tra linguaggi, imparando direttamente dalle migrazioni reali osservabili nei repository open-source. L’idea centrale è analizzare commit in cui file Java vengono rimossi e sostituiti da corrispondenti file Kotlin, costruendo così un dataset in cui ogni commit diventa una “query” e ogni file del progetto un “documento” da ordinare secondo la probabilità di essere migrato. Attraverso 56 feature strutturali e Android-specifiche, il modello (LambdaMART) impara i pattern che guidano gli sviluppatori nella scelta dei file da migrare — come il ruolo delle classi (Activity, View, Service), la complessità, l’accoppiamento e altre proprietà del codice — e produce una classifica dei file da considerare in ogni passo della migrazione. L’implementazione concreta MigrationExpJ2K, applicata alla migrazione Java→Kotlin su progetti Android, è addestrata su oltre 10.000 esempi di migrazione e valutata con MAP@K (K=1..10), ottenendo valori compresi tra 0.225 e 0.308 e superando sia la selezione casuale sia una strategia derivata dalle linee guida di Google. I risultati indicano che il modello riesce a catturare in modo efficace il comportamento tipico degli sviluppatori durante la migrazione e può quindi fornire raccomandazioni utili per decidere l’ordine dei file da convertire; gli autori evidenziano tuttavia limiti legati alla natura dei dati open-source, al focus su migrazioni file-per-file e alla mancanza di una definizione oggettiva di “ordine ottimale” nella migrazione.
 
 ---
+
+## [INTERTRANS: Leveraging Transitive Intermediate Translations to Enhance LLM-based Code Translation](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11029964&utm_source=scopus&getft_integrator=scopus&tag=1)
+
+[...]
+
+## [Synthetic Data Generation Using Large Language Models: Advances in Text and Code](https://www.scopus.com/pages/publications/105010969575?origin=resultslist)
+
+### Survey
+
+
+
+## [Cross-Language Code Mapping with Transformer Encoder-Decoder Model](https://www.scopus.com/pages/publications/85208057324?origin=resultslist)
+
+[...]

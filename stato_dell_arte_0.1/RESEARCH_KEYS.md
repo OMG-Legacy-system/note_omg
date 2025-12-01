@@ -26,7 +26,7 @@ Nella documentazione generata bisogna considerare
 
 Considerando la natura del codice generato andrebbero eseguiti test su ogni pezzo di codice generato con sistemi di probing (con performance test)
 
-Inoltre potrebbe essere utile utilizzare un linguaggio intermedio nella conversione. In questo modo dato un codice x andrebbe tradotto nel linguaggio intermedio prima di passare al linguaggio finale _(IR, AST, pseudocode, NL intermedio, ecc.)_.
+Inoltre potrebbe essere utile utilizzare un linguaggio intermedio nella conversione. In questo modo dato un codice x andrebbe tradotto nel linguaggio intermedio prima di passare al linguaggio finale _(IR, AST, pseudocode, [NL intermedio](https://arxiv.org/pdf/2507.08627), ecc.)_.
 
 
 ```
