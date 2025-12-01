@@ -7,6 +7,12 @@ MigrationExp è un approccio basato su *learning-to-rank* progettato per support
 
 ---
 
+## [INTERTRANS: Leveraging Transitive Intermediate Translations to Enhance LLM-based Code Translation](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11029964&utm_source=scopus&getft_integrator=scopus&tag=1)
+
+Il paper “INTERTRANS: Leveraging Transitive Intermediate Translations to Enhance LLM-based Code Translation” affronta il problema della traduzione automatica di codice tra linguaggi di programmazione (PL). Gli autori propongono INTERTRANS, un metodo che utilizza traduzioni transitive attraverso linguaggi intermedi: costruiscono un “albero di traduzioni” (tramite l’algoritmo ToCT) per pianificare percorsi intermedi tra sorgente e target, generano le traduzioni con un modello LLM e verificano il risultato con test-suite. Su tre benchmark (CodeNet, HumanEval-X, TransCoder) e con vari LLM (Code Llama, Magicoder, StarCoder2), INTERTRANS migliora significativamente l’accuratezza computazionale delle traduzioni (miglioramenti assoluti in CA tra circa 18.3% e 43.3%, mediana ~28.6%). I risultati migliori riportano una CA media tra 87.3% e 95.4%. Gli autori concludono che la traduzione tramite linguaggi intermedi è una “strategia semplice ma efficace” per sfruttare le capacità multilingue degli LLM, migliorando in modo consistente la qualità della code translation rispetto alla traduzione diretta. L’approccio risulta particolarmente utile laddove sorgente e target sono molto distanti — a patto di avere test-suite per la verifica — e apre la strada a una tecnica sistematica per aumentare l’affidabilità delle traduzioni automatiche di codice.
+
+---
+
 ## [How We Use AI Agents for COBOL Migration and Mainframe Modernization](https://devblogs.microsoft.com/all-things-azure/how-we-use-ai-agents-for-cobol-migration-and-mainframe-modernization/)
 
 Il COBOL Agentic Migration Factory (CAMF) è un approccio sviluppato da Microsoft in collaborazione con Bankdata per automatizzare la modernizzazione di sistemi mainframe COBOL verso Java/Quarkus mediante agenti AI orchestrati con Microsoft Semantic Kernel. Il framework nasce dall'esigenza di migrare oltre 70 milioni di righe di codice mantenendo il controllo sulla proprietà intellettuale e riducendo i costi rispetto ai partner esterni.
@@ -127,8 +133,3 @@ Gli autori hanno seguito il seguente approccio per selezionare i paper:
 | **Standardized Generation Tools** | DataDreamer [64] | Framework per generazione standardizzata e riproducibile di dati sintetici con LLM |
 
 ---
-
-## [INTERTRANS: Leveraging Transitive Intermediate Translations to Enhance LLM-based Code Translation](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11029964&utm_source=scopus&getft_integrator=scopus&tag=1)
-
-[...]
-
