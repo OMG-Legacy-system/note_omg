@@ -7,16 +7,128 @@ MigrationExp è un approccio basato su *learning-to-rank* progettato per support
 
 ---
 
+## [How We Use AI Agents for COBOL Migration and Mainframe Modernization](https://devblogs.microsoft.com/all-things-azure/how-we-use-ai-agents-for-cobol-migration-and-mainframe-modernization/)
+
+Il COBOL Agentic Migration Factory (CAMF) è un approccio sviluppato da Microsoft in collaborazione con Bankdata per automatizzare la modernizzazione di sistemi mainframe COBOL verso Java/Quarkus mediante agenti AI orchestrati con Microsoft Semantic Kernel. Il framework nasce dall'esigenza di migrare oltre 70 milioni di righe di codice mantenendo il controllo sulla proprietà intellettuale e riducendo i costi rispetto ai partner esterni.
+
+![](500027838-c1faca51-dc21-41cf-9a51-70da5a3c8255.png)
+
+
+![](camf_autogen-1024x651.png)
+
+L'approccio si articola in tre fasi: Preparazione (reverse engineering, pulizia del codice, traduzione commenti), Enrichment (aggiunta commenti significativi, identificazione strutture deterministiche), e Automation Aids (analisi flussi, generazione test, isolamento funzioni utility). L'architettura implementa tre agenti specializzati coordinati da un controller:
+Il COBOLAnalyzerAgent estrae semantica del codice mediante prompt AI (struttura programma, variabili, flussi procedurali, statement SQL/DB2, dipendenze copybook), configurato per analisi deterministica su programmi di grandi dimensioni. Il DependencyMapperAgent costruisce il grafo architetturale attraverso due prompt: il primo genera diagrammi Mermaid visualizzando dipendenze con subgraph dinamici; il secondo identifica pattern di data flow, dipendenze circolari e metriche quantitative (complessità, dipendenze medie) che guidano la prioritizzazione della migrazione. Il JavaConverterAgent trasforma il COBOL in Java Quarkus production-ready, gestendo costrutti specifici (PERFORM, GOTO) con cicli strutturati moderni invece di replicare la struttura originale ("JOBOL"), implementando retry logic, sanitizzazione contenuti e parsing intelligente.
+Il flusso operativo segue una pipeline sequenziale: (1) scoperta file COBOL/copybook, (2) analisi struttura, (3) mapping dipendenze, (4) conversione a Java, (5) generazione report. L'uso di modelli reasoning come GPT-4.1 garantisce che il codice Java preservi accuratamente la logica business originale. Gli autori evidenziano però che non tutto il COBOL è ugualmente migrabile: moduli legati a comportamenti non funzionali del mainframe (throughput batch, I/O, orchestrazione JCL) richiedono spesso ripensamento architetturale oltre alla conversione. Il progetto è open-source su GitHub con prompt personalizzabili per casi d'uso specifici.
+
+Repository GitHub: https://github.com/Azure-Samples/Legacy-Modernization-Agents
+
+Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-agents-for-cobol-migration-and-mainframe-modernization/
+
+
+---
+## [Code Reborn](https://arxiv.org/pdf/2504.11335) 
+propone un'architettura ibrida per la migrazione COBOL→Java che combina parsing strutturale tramite ANTLR (per generare l'Abstract Syntax Tree) con un modello LSTM a 3 layer che suggerisce trasformazioni semantiche del codice. Il sistema include un'interfaccia React per visualizzare i miglioramenti attraverso dashboard, grafici e rappresentazioni AST interattive. L'approccio sfrutta il deep learning per catturare pattern complessi nella traduzione tra linguaggi. Nota critica: il repository GitHub non è disponibile (fare ricerche piu' approfondite sul codice). Il paper si presenta piu' come una sorta di questionario.
+
+---
+## [Reforge-AI](https://genmind.ch/posts/Using-Agentic-AI-To-Modernize-Large-Scale-Code/) 
+è un sistema agente AI (basato su GPT-4) che modernizza automaticamente codebase Java legacy verso framework come Spring Boot, operando in due fasi: 
+
+(1) **Analisi e Documentazione** tramite `gen_docs.py` che genera documentazione dettagliata e un piano `plan.yaml` soggetto a revisione umana
+
+(2) **Trasformazione** tramite `gen_modern.py` che esegue refactoring automatizzato (conversione EJB→Spring Services, migrazione JSP→template moderni, aggiornamento dipendenze Maven, applicazione pattern OWASP, generazione test), richiedendo intervento umano per revisione del piano, validazione delle modifiche e verifica dei risultati. Il sistema utilizza un approccio multi-agente con loop di feedback iterativo dove ingegneri rivedono la documentazione auto-generata e gli agenti ri-renderizzano diagrammi Mermaid e testo aggiornati.
+
+Per il feedback utilizzato nella sua archiettura, gli AI agents si interpretano come membri del team piuttosto che strumenti di autocompletamento, rendendo l'approccio semi automatizzato.
+
+
+
+-------------------------
+## LLM  singoli presenti in letteratura
+-------------------------
+## [XMainframe: A LARGE LANGUAGE MODEL FOR MAINFRAME MODERNIZATION](https://arxiv.org/pdf/2408.04660)
+
+LLM trainato su codice COBOL per la modernizzazione dei sistemi legacy.
+
+[Github](https://github.com/FSoft-AI4Code/XMainframe)
+
+## [GPT-MIGRATE](https://github.com/joshpxyne/gpt-migrate)
+
+GPT-Migrate è un tool open-source che usa GPT-4 per migrare automaticamente un codebase da un linguaggio/framework a un altro
+
+Aspetti negativi: 
+
+1.Funziona bene solo su linguaggi semplici
+
+2.Non e’ robusto come codice
+
+3,In letteratura non ci sono grossi riferimenti sul suo utilizzo
+
+-------------------------
+## Analisi di aspetti tecnici sull'utilizzo di metamodelli
+-------------------------
+
+## [GraphCodeBERT - Pre-training Code Representations with Data Flow :utilizzo di GraphCode invece di AST)](https://openreview.net/pdf?id=jLoC4ez43PZ)
+
+GraphCodeBERT usa data flow nella fase di pre-training, che è una struttura a livello semantico del codice che codifica la relazione "da-dove-viene-il-valore" tra variabili. Tale struttura a livello semantico è meno complessa e non porta una gerarchia inutilmente profonda di AST, proprietà che rende il modello più efficiente
+
+
+
+## 
+-------------------------
+## Survey per la generazione di dati sintetici
+
+Questo approccio puo' essere utilizzato nel caso di fine-tuning di modelli LLM.
+Se si dovessere pensare alla soluzione come un agente AI, composto da vari LLM, queste tecniche ci risulterebbero utili per fine-tunare i vari LLM con dati sintetici.
+
+
+---
+## [Synthetic Data Generation Using Large Language Models: Advances in Text and Code](https://xplorestaging.ieee.org/ielx8/6287639/10820123/11080380.pdf?arnumber=11080380&utm_source=scopus&getft_integrator=scopus&tag=1&tag=1)
+
+Questo paper è una survey completa che analizza come i Large Language Models vengono utilizzati per generare dati sintetici sia per task di linguaggio naturale che di programmazione. La survey copre tecniche, risultati empirici e sfide (come la qualità dei dati e il rischio di model collapse) .
+
+
+
+Gli autori hanno seguito il seguente approccio per selezionare i paper:
+
+**Criteri di inclusione:**
+- Paper pubblicati tra gennaio 2020 e aprile 2025 (periodo boom degli LLM)
+- Focus su synthetic data generation, data augmentation o instruction tuning con LLM
+- Modelli con almeno centinaia di milioni di parametri (GPT-3/4, Claude, Llama, StarCoder, ecc.)
+- Evidenza empirica o innovazione metodologica significativa
+
+**Criteri di esclusione:**
+- Lavori solo su immagini/audio senza metodologia trasferibile a testo/codice
+- Contenuti non peer-reviewed senza rigore metodologico
+- Paper pre-2020 su modelli pre-LLM (eccetto fondamentali)
+
+
+| Tecnica utilizzata | Paper | Sintesi del lavoro |
+|-------------------|-------|-------------------|
+| **Prompt-Based Augmentation** | Li et al. [25] | Dimostrano miglioramenti del 3-26% in accuracy/F1 aggiungendo 100 esempi sintetici GPT-3.5 a 100 esempi reali in low-resource settings |
+| **Retrieval-Augmented Generation** | Chai et al. [9] | Integrano retrieval di passaggi Wikipedia durante la generazione per groundare i dati sintetici e ridurre hallucination |
+| **Topic-Controlled Prompting** | WANLI [32] | Variano sistematicamente il contenuto dei prompt per massimizzare diversità tra subtopic e migliorare generalizzazione |
+| **Randomized Prompting** | AugGPT [35] | Usano prompting randomizzato per creare dataset sintetici con maggiore varietà |
+| **Few-Shot Prompting** | GPT3Mix [31] | Applicano few-shot prompting per generare esempi task-specific con alta precisione di formato |
+| **Instruction-Based Prompting** | Unnatural Instructions [34] | Generano dataset di istruzioni sintetiche per migliorare l'instruction-following dei modelli |
+| **Iterative Generation** | Self-Instruct [29] | Metodo iterativo dove l'LLM genera nuove istruzioni partendo da seed prompts, creando dataset auto-generati |
+| **Feedback-Driven Generation** | SunGen [30] | Focalizzano la generazione su failure cases e model weaknesses usando automated weighting |
+| **Zero-Shot Topic Generation** | Yu et al. [24] | LLM genera prima lista di topic rilevanti, poi produce esempi specifici per ogni topic aumentando diversità |
+| **Quality Filtering** | Ding et al. [3] | Analizzano se GPT-3 è un buon annotatore e sviluppano tecniche per filtrare output sintetici di bassa qualità |
+| **Instruction-Following (Code)** | Code Alpaca [49] | Applicano Self-Instruct al dominio codice creando 20K esempi instruction-solution con ChatGPT |
+| **Evolutionary Code Generation** | WizardCoder [51] | Usano strategia evolutiva (Code Evol-Instruct) per generare iterativamente task di coding sempre più complessi |
+| **GitHub-Based Generation** | Magicoder [52] | Raccolgono snippet da GitHub e generano 75K instruction prompts che portano a quegli snippet come risposte |
+| **Code Translation** | TransCoder - Lachaux et al. [8] | Usano LLM come GPT-4 per tradurre codice tra linguaggi diversi creando coppie parallele high-quality |
+| **Code Refactoring** | Studio con CodeLLaMa-7B [44] | Pipeline di refactoring sistematico (rename, formatting, comments) che migliora performance fino al 30% |
+| **Incremental Edit Generation** | LintSeq [42] | Generano sequenze di edit incrementali con CodeLLaMa-7B per insegnare ai modelli diversità nelle soluzioni |
+| **Problem Solving** | AlphaCode - Microsoft [53] | Fine-tuning di CodeGen per generare candidati multipli a problemi di competitive programming |
+| **RL-Based Algorithm Discovery** | AlphaDev - DeepMind [54] | Reinforcement learning con tecniche AlphaZero per scoprire algoritmi di sorting più efficienti |
+| **Buggy Code Generation** | "LLM-itation" [56] | GPT-4 imita errori tipici di studenti creando buggy code realistico per sistemi di tutoring automatici |
+| **Self-Improvement Code Repair** | Studio con GPT-3 [45] | Modello genera codice, identifica errori via unit tests, li ripara creando coppie (buggy, fixed) |
+| **RL with Execution Feedback** | CodeRL [43] | Usa esecuzione corretta come reward signal per fine-tuning via reinforcement learning |
+| **Standardized Generation Tools** | DataDreamer [64] | Framework per generazione standardizzata e riproducibile di dati sintetici con LLM |
+
+---
+
 ## [INTERTRANS: Leveraging Transitive Intermediate Translations to Enhance LLM-based Code Translation](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11029964&utm_source=scopus&getft_integrator=scopus&tag=1)
 
 [...]
 
-## [Synthetic Data Generation Using Large Language Models: Advances in Text and Code](https://www.scopus.com/pages/publications/105010969575?origin=resultslist)
-
-### Survey
-
-
-
-## [Cross-Language Code Mapping with Transformer Encoder-Decoder Model](https://www.scopus.com/pages/publications/85208057324?origin=resultslist)
-
-[...]
