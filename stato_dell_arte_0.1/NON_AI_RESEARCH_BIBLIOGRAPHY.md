@@ -32,3 +32,17 @@ Supponiamo che il sistema legacy gestisca diverse operazioni finanziarie: calcol
 Usando **Neverlang**, si possono creare questi micro-linguaggi separatamente e testarli isolatamente. Poi, a runtime, la DLPL combina i micro-linguaggi necessari per eseguire l’applicazione completa, consentendo così al sistema di supportare sia codice legacy COBOL sia nuove estensioni in Java senza riscrivere l’intero programma in una sola volta.  
 
 In questo modo, il sistema evolve **gradualmente**, minimizzando rischi e interruzioni, e gli sviluppatori possono migrare funzionalità critiche prima di quelle meno rilevanti, tutto grazie alla modularità dei micro-linguaggi.
+---
+
+## [TRANSFORMING SOFTWARE ARCHITECTURE: A STRANGLER FIG PATTERN APPROACH](http://www.icicelb.org/ellb/contents/2025/8/elb-16-08-08.pdf)
+
+
+![alt text](./figures/strangler_fig_pattern.png)
+
+---
+
+## [Expert system for automatic microservices identification using API similarity graph](https://www.scopus.com/pages/publications/85139558704?origin=resultslist)
+
+---
+
+## [Improving microservices extraction using evolutionary search](https://www.scopus.com/pages/publications/85134792906?origin=resultslist)
