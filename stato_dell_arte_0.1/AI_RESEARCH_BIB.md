@@ -60,8 +60,53 @@ GraphCodeBERT usa data flow nella fase di pre-training, che è una struttura a l
 
 
 ## 
+
+
+## [StructCoder (Tipirneni et al., 2022)]()
+
+introduce un modello Transformer encoder-decoder structure-aware per code generation (comprendere la struttura del codice sia quando lo legge (encoder) che quando lo genera (decoder).
+
+l'Encoder analizza:
+
+**AST (Abstract Syntax Tree)**: l'albero che rappresenta la struttura grammaticale del codice
+
+**Data Flow Graph**: le relazioni tra le variabili (chi usa chi, chi dipende da chi) 
+
+il decoder esegue due compiti aggiuntivi che lo obbligano a ragionare sulla struttura:
+
+**AST Paths Prediction**: deve indovinare tutti i nodi dell'albero sintattico dal root alla foglia per ogni token
+
+**Data Flow Prediction**: deve indovinare quali variabili dipendono da quali
+
+
+Cosa ci dice questo paper? E' un paper vecchio che analizza la struttura di un LLM per la generazione ottimale di codice.Potrebbe aiutarci a modificare la struttura di un LLM open-source per la generazione di codice ottimale partendo da AST e Data Flow Graph.
+Se seguiremo la strada degli LLM agent si dovra' capire tramite diverse tecniche, quale produce risultati migliori (invece di mettere il prompt testuale si da un AST o altri modelli)
+
+
+---
+## [AST-Trans (ICSE 2022)]()
+
+Questo paper risolve un problema di code summarization.
+Tuttavia non si tratta del nostro ambito di lavoro, ma puo' essere utile in futuro su come trattare gli input AST negli LLM.
+
+I metodi attuali usano Transformer che prendono in input l'AST linearizzato.
+Ci sono diversi problemi:
+
+**Input molto lungo**: gli AST sono molto più lunghi del codice originale 
+
+**Complessita' computazionale**: Il Transformer standard calcola l'attenzione tra tutti i nodi dell'AST, con complessità O(N²).
+
+Gli autori osservano che non serve guardare tutti i nodi dell'AST bastano solo due tipi di relazioni:
+
+**Ancestor-descendant** : per capire la struttura gerarchica del codice
+**Sibling** : per capire l'ordine delle operazioni dentro uno stesso blocco
+
+ AST-Trans funziona con l'utilizzo di matrici per calcolare le relazioni tra genitore-figlio e fratello-fratello.
+ Da ottimi risultati invece del AST standard usato come input.
+
+ 
 -------------------------
-## Survey per la generazione di dati sintetici
+# Survey per la generazione di dati sintetici
 
 Questo approccio puo' essere utilizzato nel caso di fine-tuning di modelli LLM.
 Se si dovessere pensare alla soluzione come un agente AI, composto da vari LLM, queste tecniche ci risulterebbero utili per fine-tunare i vari LLM con dati sintetici.
@@ -113,7 +158,9 @@ Gli autori hanno seguito il seguente approccio per selezionare i paper:
 | **RL with Execution Feedback** | CodeRL [43] | Usa esecuzione corretta come reward signal per fine-tuning via reinforcement learning |
 | **Standardized Generation Tools** | DataDreamer [64] | Framework per generazione standardizzata e riproducibile di dati sintetici con LLM |
 
----
+-------------------------
+
+
 
 ## [From legacy to microservices: A type-based approach for microservices identification using machine learning and semantic analysis](https://www.scopus.com/pages/publications/85138198344?origin=resultslist)
 

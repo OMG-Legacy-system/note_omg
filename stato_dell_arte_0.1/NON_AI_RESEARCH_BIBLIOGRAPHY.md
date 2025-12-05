@@ -32,6 +32,13 @@ Supponiamo che il sistema legacy gestisca diverse operazioni finanziarie: calcol
 Usando **Neverlang**, si possono creare questi micro-linguaggi separatamente e testarli isolatamente. Poi, a runtime, la DLPL combina i micro-linguaggi necessari per eseguire l’applicazione completa, consentendo così al sistema di supportare sia codice legacy COBOL sia nuove estensioni in Java senza riscrivere l’intero programma in una sola volta.  
 
 In questo modo, il sistema evolve **gradualmente**, minimizzando rischi e interruzioni, e gli sviluppatori possono migrare funzionalità critiche prima di quelle meno rilevanti, tutto grazie alla modularità dei micro-linguaggi.
+
+
+
+---commento Andrea Elia----
+questo e' un approccio su come agire nel caso di modernizzazione di sistemi legacy. Non rappresenta un tools per la riconversione di sistemi legacy, tuttavia potrebbe esserci di grande aiuto appena capiamo su quale strada proseguire.
+
+
 ---
 
 ## [TRANSFORMING SOFTWARE ARCHITECTURE: A STRANGLER FIG PATTERN APPROACH](http://www.icicelb.org/ellb/contents/2025/8/elb-16-08-08.pdf)
