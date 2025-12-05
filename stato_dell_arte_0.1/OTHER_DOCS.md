@@ -28,3 +28,33 @@ Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-
 ---
 
 ## [From Monolith to Microservice: Measuring Architecture Maintainability](https://www.scopus.com/pages/publications/85161180737?origin=resultslist)
+
+---
+# Benchmark 
+
+
+
+---
+
+## [CodeXGLUE: A Machine Learning Benchmark Dataset for Code Understanding and Generation (Lu et al., 2021)](https://www.alphaxiv.org/abs/2102.04664v2)
+
+
+ è un benchmark completo introdotto da Microsoft Research per task di comprensione e generazione di codice.
+
+ Il benchmark aggrega 10 task diversificati su 14 dataset che coprono quattro scenari principali: 
+
+ **code-code** (clone detection su BigCloneBench con 900K/416K/416K samples e POJ-104, defect detection su Devign, cloze test CT-all/CT-max/min su 6 linguaggi, code completion su PY150 e GitHub Java Corpus, code repair su Bugs2Fix, code translation Java↔C# su 10K training samples)
+
+ **text-code** (natural language code search, text-to-code generation su CONCODE con 100K samples), 
+ 
+ **code-text** (code summarization)
+ 
+**text-text** (documentation translation su 5 lingue naturali). 
+
+Il benchmark fornisce tre sistemi baseline pronti all'uso: BERT-style (CodeBERT) per task di understanding, GPT-style (CodeGPT/CodeGPT-adapted) per completion e generation, ed Encoder-Decoder per sequence-to-sequence generation. 
+
+CodeXGLUE ha metriche standardizzate per task (BLEU, exact match, CodeBLEU per translation; accuracy per classification; MRR per retrieval). 
+
+Il benchmark supporta multiple programming languages (Java, Python, C#, PHP, JavaScript, Ruby, Go, C/C++) e rappresenta il primo benchmark diversificato che può essere applicato a vari problemi di code intelligence, diventando lo standard de-facto per valutazione di modelli pre-trained per codice.
+
+---
