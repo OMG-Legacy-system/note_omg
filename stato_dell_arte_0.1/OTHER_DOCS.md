@@ -25,11 +25,16 @@ Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-
 
 ## [Cross-Language Code Mapping with Transformer Encoder-Decoder Model](https://www.scopus.com/pages/publications/85208057324?origin=resultslist)
 
----
-
-## [From Monolith to Microservice: Measuring Architecture Maintainability](https://www.scopus.com/pages/publications/85161180737?origin=resultslist)
+Problemi di accesso
 
 ---
+
+## [Modernizing 90S ERA Software to a New Language and Environment Using LLMS - An Empirical Investigation](https://www.researchgate.net/publication/391612744_Modernizing_90S_ERA_Software_to_a_New_Language_and_Environment_Using_LLMS_-_An_Empirical_Investigation)
+
+Articolo richiesto, in attesa
+
+---
+
 # Benchmark 
 
 
@@ -56,5 +61,10 @@ Il benchmark fornisce tre sistemi baseline pronti all'uso: BERT-style (CodeBERT)
 CodeXGLUE ha metriche standardizzate per task (BLEU, exact match, CodeBLEU per translation; accuracy per classification; MRR per retrieval). 
 
 Il benchmark supporta multiple programming languages (Java, Python, C#, PHP, JavaScript, Ruby, Go, C/C++) e rappresenta il primo benchmark diversificato che può essere applicato a vari problemi di code intelligence, diventando lo standard de-facto per valutazione di modelli pre-trained per codice.
+
+---
+
+
+## [From Monolith to Microservice: Measuring Architecture Maintainability](https://www.scopus.com/pages/publications/85161180737?origin=resultslist)
 
 ---

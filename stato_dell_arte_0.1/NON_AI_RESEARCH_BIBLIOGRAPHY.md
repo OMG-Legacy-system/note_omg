@@ -43,8 +43,11 @@ questo e' un approccio su come agire nel caso di modernizzazione di sistemi lega
 
 ## [TRANSFORMING SOFTWARE ARCHITECTURE: A STRANGLER FIG PATTERN APPROACH](http://www.icicelb.org/ellb/contents/2025/8/elb-16-08-08.pdf)
 
+Pattern utilizzato per la migrazione graduale di applicazioni legacy da architettura monolitica ad architettura a microservizi
 
 ![alt text](./figures/strangler_fig_pattern.png)
+
+Utilizza un gateway per indirizzare le richieste al corrispondente microservizio se pronto e funzionante
 
 ---
 
