@@ -21,6 +21,11 @@ Guida Argon Systems: https://argonsys.com/microsoft-cloud/library/how-we-use-ai-
 
 ## [Automated Testing of COBOL to Java Transformation](https://www.scopus.com/pages/publications/105013962212?origin=resultslist)
 
+L’articolo presenta un framework IBM per validare automaticamente la trasformazione da COBOL a Java eseguita da modelli LLM. Il sistema genera input tramite symbolic execution dei paragrafi COBOL, esegue il codice COBOL sul mainframe con mocking delle risorse esterne (come Db2, CICS, IMS e file), costruisce test JUnit equivalenti per il Java generato e confronta gli output per verificare l’equivalenza funzionale. I risultati dimostrano che la soluzione è scalabile su codice enterprise molto ampio, raggiunge elevati livelli di branch coverage e riduce significativamente il tempo necessario rispetto alla validazione manuale. Il framework individua eventuali errori nella traduzione Java e fa già parte del prodotto Watsonx Code Assistant for Z.
+
+I *path* citati nell’articolo rappresentano le diverse traiettorie di esecuzione possibili all’interno di un paragrafo COBOL, determinate dai rami logici creati da istruzioni come IF, EVALUATE o PERFORM. Ogni path corrisponde a una sequenza specifica di istruzioni attraversate in base a determinati valori di input. Il framework genera automaticamente questi path tramite symbolic execution e li utilizza per confrontare gli output COBOL e Java, assicurando che tutte le varianti logiche del codice originale siano correttamente validate.
+
+
 ---
 
 ## [Cross-Language Code Mapping with Transformer Encoder-Decoder Model](https://www.scopus.com/pages/publications/85208057324?origin=resultslist)

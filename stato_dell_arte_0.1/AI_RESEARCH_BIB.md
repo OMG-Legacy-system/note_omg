@@ -158,10 +158,10 @@ Gli autori hanno seguito il seguente approccio per selezionare i paper:
 | **RL with Execution Feedback** | CodeRL [43] | Usa esecuzione corretta come reward signal per fine-tuning via reinforcement learning |
 | **Standardized Generation Tools** | DataDreamer [64] | Framework per generazione standardizzata e riproducibile di dati sintetici con LLM |
 
--------------------------
-
-
+---
 
 ## [From legacy to microservices: A type-based approach for microservices identification using machine learning and semantic analysis](https://www.scopus.com/pages/publications/85138198344?origin=resultslist)
+
+Il paper propone MicroMiner, un approccio che combina analisi statica, analisi semantica e tecniche di machine learning per identificare microservizi a partire da applicazioni monolitiche. Il metodo classifica le classi del sistema in Application, Entity e Utility tramite un modello di ML; raggruppa poi le classi in servizi tipizzati utilizzando il clustering guidato dalle relazioni statiche; infine aggrega questi servizi in microservizi sfruttando un bilanciamento tra similarità semantica e dipendenze strutturali. L’approccio è validato su quattro sistemi legacy, mostrando prestazioni superiori a metodi state-of-the-art basati su metriche strutturali o topic modeling: MicroMiner raggiunge infatti una precisione del 68.15% (male) e un recall del 77% nell’individuazione dei microservizi, e genera componenti con maggiore coesione e minore accoppiamento. Le conclusioni evidenziano che MicroMiner automatizza efficacemente una delle fasi più complesse della migrazione verso architetture a microservizi, produce risultati architetturalmente significativi e migliora sia la qualità della decomposizione che la capacità di rispettare principi fondamentali come single responsibility e loose coupling, pur richiedendo ulteriore lavoro per gestire meglio classi mal nominate e casi con semantica poco chiara.
 
 ---
