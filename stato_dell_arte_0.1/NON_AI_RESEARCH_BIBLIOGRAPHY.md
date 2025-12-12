@@ -2,6 +2,8 @@
 
 ## [A tool assisted Agile approach for legacy application migration - 2025](https://link.springer.com/content/pdf/10.1007/s13198-025-02823-3.pdf?utm_source=scopus&getft_integrator=scopus)
 
+#### Q2
+
 L’articolo presenta un approccio Agile supportato da una suite di strumenti progettata per la migrazione di applicazioni legacy. La suite integra analisi dinamica del comportamento a runtime, generazione automatica di dati di test, individuazione delle funzionalità realmente utilizzate e trasformazione di tali evidenze in storie Agile utili alla pianificazione della migrazione. Il nucleo tecnico è un framework open-source di dynamic instrumentation, che consente di osservare l’esecuzione reale del software legacy e ricavarne complessità, frequenza d’uso e dipendenze funzionali. A questo si affiancano strumenti personalizzati per l’analisi, la generazione di test e la validazione dei componenti migrati, supportati da un augmented real-execution framework che permette la coesistenza del sistema legacy con quello nuovo durante la transizione. L’intera suite si integra con IDE diffusi e copre tutte le fasi della migrazione: analisi, scomposizione funzionale, sviluppo, test e verifica finale.
 
 | Strumento / componente | Descrizione e ruolo |
@@ -38,17 +40,6 @@ In questo modo, il sistema evolve **gradualmente**, minimizzando rischi e interr
 
 ---commento Andrea Elia----
 questo e' un approccio su come agire nel caso di modernizzazione di sistemi legacy. Non rappresenta un tools per la riconversione di sistemi legacy, tuttavia potrebbe esserci di grande aiuto appena capiamo su quale strada proseguire.
-
-
----
-
-## [TRANSFORMING SOFTWARE ARCHITECTURE: A STRANGLER FIG PATTERN APPROACH](http://www.icicelb.org/ellb/contents/2025/8/elb-16-08-08.pdf)
-
-Pattern utilizzato per la migrazione graduale di applicazioni legacy da architettura monolitica ad architettura a microservizi
-
-![alt text](./figures/strangler_fig_pattern.png)
-
-Utilizza un gateway per indirizzare le richieste al corrispondente microservizio se pronto e funzionante
 
 ---
 
