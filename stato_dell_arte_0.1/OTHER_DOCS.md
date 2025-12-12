@@ -36,7 +36,7 @@ Problemi di accesso
 
 ## [Modernizing 90S ERA Software to a New Language and Environment Using LLMS - An Empirical Investigation](https://www.researchgate.net/publication/391612744_Modernizing_90S_ERA_Software_to_a_New_Language_and_Environment_Using_LLMS_-_An_Empirical_Investigation)
 
-Articolo richiesto, in attesa
+Articolo in PDF non disponibile
 
 ---
 

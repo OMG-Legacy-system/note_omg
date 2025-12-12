@@ -50,3 +50,19 @@ o, per comparativo
 
 
 Nel processo di traduzione andrebbe considerata la presenza di librerie non native del linguaggio. Questo potrebbe avvenire in diversi modi, anche se l'intervento umano è consigliato
+
+### Research Keys per documentazione e valutazione della qualità del codice
+
+```pgsql
+
+    TITLE-ABS-KEY ( (
+            "COBOL" OR "legacy code"
+        )AND(
+            "control" OR "assesment" OR "validation" OR "evaluation" OR "quality"
+        )AND(
+            "automatic" OR "ai" OR "machine learning" OR "artificial intelligence"
+        )
+
+    ) 
+
+```
