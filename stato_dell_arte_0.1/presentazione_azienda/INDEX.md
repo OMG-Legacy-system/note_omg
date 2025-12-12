@@ -92,6 +92,7 @@ Prendiamo uno snapshot al commit 2d1c59, durante la migrazione. A questo punto l
 MigrationExp analizza questi 6 file e li ordina per priorità. AboutActivity.java ottiene score 0.96 - la massima priorità. Seguono MyWidgetProvider con 0.58, WidgetConfigureActivity con 0.42, e così via. Constants.java ha addirittura score negativo (-0.24), quindi andrebbe migrato per ultimo.
 Cosa hanno fatto davvero gli sviluppatori nel commit successivo? Hanno migrato AboutActivity.java, esattamente il file raccomandato da MigrationExp. In questo caso, MAP@1 è perfetto: 1.0.
 Questo dimostra che il modello ha catturato correttamente i pattern decisionali degli sviluppatori. Notate che questo ordine non segue la guideline Google, che suggerirebbe di migrare prima Utils.java (utility class) rispetto a Activity files.
+
 ---
 
 ## 5. TRADUZIONE AUTOMATICA DEL CODICE CON LLM (6-7 min)
@@ -129,20 +130,11 @@ Il messaggio chiave è che InterTrans migliora qualsiasi LLM senza bisogno di tr
 
 Da rimuovere
 
----
-
-## 6. LLM SPECIALIZZATI PER MAINFRAME (Traduzione automatica del codice con LLM) (5 min)
-
-
-
-### 6.2 Sistemi Agentici: CAMF di Microsoft
-**Contenuto della slide:**
-COBOL Agentic Migration Factory (CAMF) di Microsoft/Bankdata orchestra agenti AI specializzati via Semantic Kernel per migrazione automatica COBOL→Java/Quarkus. Architettura tri-fasica: (1) Preparazione: reverse engineering, pulizia codice, traduzione commenti, (2) Enrichment: aggiunta commenti significativi, identificazione strutture deterministiche, (3) Automation Aids: analisi flussi, generazione test, isolamento utility functions. Tre agenti coordinati: COBOLAnalyzerAgent (estrazione semantica, variabili, SQL/DB2, dipendenze copybook), DependencyMapperAgent (grafi architetturali Mermaid, identificazione pattern, metriche prioritizzazione), JavaConverterAgent (conversione production-ready con gestione PERFORM/GOTO, retry logic, parsing intelligente). Utilizza GPT-4.1 per reasoning. Repository open-source: Azure-Samples/Legacy-Modernization-Agents. Include IBM Watsonx Code Assistant for Z (20B parametri, 115 linguaggi, 1.5T token).
 
 ---
-## 7. TOOL AUTOMATICI BASATI SU AI
+## 6. TOOL AUTOMATICI BASATI SU AI
 
-### 7.1 Microsoft CAMF - COBOL Agentic Migration Factory 
+### 6.1 Microsoft CAMF - COBOL Agentic Migration Factory 
 
 "Microsoft CAMF - COBOL Agentic Migration Factory - è un framework open-source sviluppato da Microsoft per la modernizzazione di sistemi mainframe COBOL.A differenza di XMainframe che si limita a spiegare il codice, o MigrationExp che suggerisce l'ordine di migrazione, CAMF esegue la traduzione completa end-to-end da COBOL a Java Quarkus, producendo codice production-ready.Il framework è stato sviluppato in collaborazione con Bankdata, un consorzio di 8 banche danesi che gestisce oltre 70 milioni di linee di codice COBOL. Questa partnership è stata fondamentale perché ha fornito accesso a codice COBOL enterprise reale, non solo esempi semplificati da GitHub.CAMF è costruito su Microsoft Semantic Kernel, un framework per orchestrare agenti AI. La tecnologia di base è GPT-4.1, scelto specificamente per le sue capacità di reasoning - la capacità di analizzare logicamente la struttura del codice COBOL, seguire decision paths e comprendere control flow.Il framework è completamente open-source e disponibile su GitHub all'indirizzo Azure-Samples/Legacy-Modernization-Agents. Questo è importante perché permette alle organizzazioni di mantenere il controllo del proprio intellectual property, evitando dipendenza da vendor esterni o Global System Integrators.La data di pubblicazione è luglio 2025, quindi è un tool molto recente - pubblicato tramite blog post su Microsoft DevBlogs. Non è un paper accademico peer-reviewed, ma un progetto enterprise open-source con documentazione tecnica completa.Un aspetto critico da sottolineare: CAMF NON fa training di modelli custom. Usa GPT-4.1 pre-trained in modalità zero-shot, affidandosi completamente a prompt engineering e orchestrazione multi-agente per ottenere risultati di qualità.
 
@@ -172,7 +164,7 @@ L'output complessivo della Fase 3 include: Mermaid diagrams salvati in formato .
 
 
 
-### 7.2 Reforge-AI
+### 6.2 Reforge-AI
 Reforge-AI opera attraverso un processo bi-fasico molto deliberato, dove ogni fase ha obiettivi chiari e deliverables specifici.
 FASE 1: DOCUMENTATION è gestita dallo script Python gen_docs.py e ha come goal generare documentazione autoritativa PRIMA di toccare qualsiasi codice. Questo è il pilastro del documentation-first approach.
 Tecnicamente, la fase usa una Documentation Crew composta da agenti specializzati: un Architecture Analyzer con role 'Senior Architect' che scansiona il codebase e existing Javadoc per inferire module boundaries, data flows, e integration points, un Diagram Generator con role 'Technical Writer' che crea rappresentazioni visive, un Dependency Mapper con role 'Build Engineer' che analizza le relazioni tra componenti, e un Plan Writer con role 'Migration Specialist' che sintetizza tutto in un piano eseguibile.
@@ -209,40 +201,40 @@ Nonostante queste limitazioni, Reforge-AI dimostra che l'approccio agentic con d
 
 ---
 
-## 8. VALIDAZIONE E TESTING AUTOMATICO (4 min)
+## 7. VALIDAZIONE E TESTING AUTOMATICO (4 min)
 
 **Contenuto della slide:**
 Framework IBM per validazione automatica trasformazioni COBOL→Java. Pipeline: (1) Symbolic execution genera input per paragrafi COBOL coprendo tutti i path logici (IF, EVALUATE, PERFORM), (2) Esecuzione COBOL su mainframe con mocking di risorse esterne (Db2, CICS, IMS, file), (3) Generazione automatica test JUnit equivalenti per Java, (4) Confronto output per verificare equivalenza funzionale. Già integrato in Watsonx Code Assistant for Z. Scalabile su enterprise codebase, raggiunge elevati branch coverage, riduce drasticamente tempo validazione vs approccio manuale. Ogni path rappresenta una traiettoria di esecuzione determinata dai rami logici: il framework assicura che tutte le varianti logiche siano validate, identificando errori nella traduzione Java.
 
 ---
 
-## 9. RAPPRESENTAZIONI INTERMEDIE E METAMODELLI (5 min)
+## 8. RAPPRESENTAZIONI INTERMEDIE E METAMODELLI (5 min)
 
-### 9.1 Evoluzione: Da AST a Data Flow Graph
+### 8.1 Evoluzione: Da AST a Data Flow Graph
 **Contenuto della slide:**
 GraphCodeBERT introduce data flow graph come alternativa efficiente agli AST nel pre-training. Il data flow codifica relazioni semantiche "da-dove-viene-il-valore" tra variabili: struttura più compatta, gerarchie meno profonde, maggiore efficienza computazionale rispetto agli AST tradizionali. StructCoder implementa encoder-decoder structure-aware che analizza sia AST che Data Flow Graph nell'encoder, e predice AST paths e data flow nel decoder. Questo obbliga il modello a "ragionare" sulla struttura durante la generazione.
 
-### 9.2 Ottimizzazione Input: AST-Trans
+### 8.2 Ottimizzazione Input: AST-Trans
 **Contenuto della slide:**
 AST-Trans affronta il problema dell'input length negli AST linearizzati (molto più lunghi del codice) e complessità O(N²) dell'attention standard. Soluzione: focus solo su relazioni critiche (ancestor-descendant per gerarchia, sibling per ordine operazioni) tramite matrici di relazione genitore-figlio e fratello-fratello. Risultati superiori vs AST standard in code summarization. Implicazione per migrazione: questi approcci possono essere integrati in architetture LLM custom per ottimizzare processamento di rappresentazioni strutturali del codice legacy.
 
 ---
 
-## 10. APPROCCI MODULARI: Dynamic Language Product Lines (3 min)
+## 9. APPROCCI MODULARI: Dynamic Language Product Lines (3 min)
 
 **Contenuto della slide:**
 Dynamic Language Product Lines (DLPL) applicano concetti di software product line ai linguaggi di programmazione. DLPL = insieme di varianti linguistiche ricombinabili dinamicamente a runtime. Micro-linguaggi = moduli che implementano funzionalità/domini specifici, sviluppabili e testabili indipendentemente. Esempio COBOL→Java: micro-linguaggio per calcolo interessi, micro-linguaggio per gestione conti, micro-linguaggio per reportistica moderna. Implementazione Neverlang: combina micro-linguaggi a runtime per supportare codice legacy e nuove estensioni simultaneamente. Vantaggio: migrazione graduale senza riscrittura completa, coesistenza legacy-moderno, testing incrementale. Non è un tool di conversione ma una metodologia architetturale per guidare modernizzazione modulare.
 
 ---
 
-## 11. BENCHMARK E VALUTAZIONE (3 min)
+## 10. BENCHMARK E VALUTAZIONE (3 min)
 
 **Contenuto della slide:**
 CodeXGLUE (Microsoft Research 2021) resta benchmark fondamentale: 10 task diversificati, 14 dataset, 4 scenari (code-code, text-code, code-text, text-text), copertura di Java/Python/C#/PHP/JavaScript/Ruby/Go/C/C++. Task includono: clone detection (BigCloneBench 900K samples), defect detection (Devign), code completion (PY150, GitHub Java Corpus), code repair (Bugs2Fix), code translation Java↔C# (10K training), NL code search, text-to-code generation (CONCODE 100K), code summarization. Fornisce baseline BERT-style (CodeBERT), GPT-style (CodeGPT), Encoder-Decoder. Metriche standardizzate: BLEU, exact match, CodeBLEU per translation; accuracy per classification; MRR per retrieval. Standard de-facto per valutazione modelli pre-trained. Necessari nuovi benchmark per COBOL/mainframe specifici (vedi MainframeBench).
 
 ---
 
-## 12. CONCLUSIONI E RACCOMANDAZIONI (3-4 min)
+## 11. CONCLUSIONI E RACCOMANDAZIONI (3-4 min)
 
 **Contenuto della slide:**
 La migrazione di sistemi legacy è un problema complesso che richiede approcci multi-dimensionali. Non esiste soluzione universale: la scelta dipende da criticità sistema, budget, expertise disponibile, tolleranza al rischio. **Approccio raccomandato:** (1) Assessment approfondito con tool di analisi dinamica per capire cosa il sistema fa realmente, (2) Strategia incrementale (Strangler Fig) per ridurre rischi, (3) Scomposizione intelligente basata su analisi automatica per identificare boundary ottimali, (4) Utilizzo LLM specializzati (XMainframe, CAMF) per accelerare traduzione mantenendo qualità, (5) Testing automatico estensivo per garantire equivalenza funzionale, (6) Revisione umana sistematica su decisioni architetturali e codice mission-critical. Lo stato dell'arte offre strumenti potenti ma non sostituisce competenza di dominio: la modernizzazione è una partnership tra automazione AI ed expertise umana. Investimento in queste tecnologie può ridurre significativamente costi e tempi, ma richiede pianificazione attenta e commitment organizzativo.
