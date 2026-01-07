@@ -43,55 +43,186 @@ Entrambi forniscono supporto decisionale agli sviluppatori durante il processo d
 
 
 ### 4.1 XMainframe
-**Contenuto della slide:**
-XMainframe è il primo Large Language Model specificamente progettato per comprendere codice COBOL e sistemi mainframe. 
-È stato sviluppato da FPT Software AI Center e rappresenta un'innovazione importante nel campo.
+**[SLIDE 1 - Introduzione]**
+XMainframe rappresenta il primo LLM open-source specificamente ottimizzato per la comprensione di sistemi mainframe e codebase COBOL. È stato sviluppato da FPT Software AI Center e pubblicato su arXiv ad agosto 2024.
+Per contestualizzare il problema che questo modello affronta: IBM stima che esistano tra 200 e 220 miliardi di linee di codice COBOL ancora in produzione, prevalentemente in settori mission-critical come banking, insurance e government. Il costo di riscrittura manuale è stimato tra 32 e 50 centesimi per linea, configurando quello che viene definito un hundred-billion-dollar challenge MarkTechPost.
+La scelta di DeepSeek-Coder 7B come base model è strategica: DeepSeek ha dimostrato performance state-of-the-art su code understanding tasks, con un'architettura decoder-only che utilizza Multi-Head Latent Attention per la compressione del KV-cache e RoPE per il positional encoding. Questo lo rende un candidato ideale per domain adaptation verso linguaggi a bassa risorsa come COBOL
 
-La base è DeepSeek-Coder 7B, un modello open-source per code intelligence, che è stato ulteriormente addestrato - attraverso continued pre-training - su un dataset specializzato di codice COBOL e documentazione.
-Questo approccio di specializzazione si è rivelato vincente: un modello da 7 miliardi di parametri specializzato supera modelli generici molto più grandi su task specifici COBOL.
 
-Il funzionamento di XMainframe è molto diretto. Si fornisce codice COBOL come input e il modello genera tre tipi di output:
+**KV-cache**
+Durante l'inferenza autoregressive (quando il modello genera token uno alla volta), c'è un problema di efficienza: per generare il token N, il modello deve ricalcolare l'attention rispetto a tutti i token precedenti (1, 2, ..., N-1).
+Per evitare di ricalcolare K e V ad ogni step, si usa il KV-cache: si memorizzano i vettori K e V dei token già processati e si riutilizzano. Questo velocizza l'inferenza ma consuma molta memoria GPU
 
-Primo, una spiegazione della complessità - il modello analizza quanto è complesso il codice e identifica le parti più critiche.
-Secondo, una spiegazione dettagliata del codice COBOL - traduce la logica COBOL in linguaggio naturale, rendendo comprensibile anche a chi non conosce il linguaggio.
-Terzo, suggerimenti operativi - raccomandazioni su come approcciare la migrazione o il refactoring.
-Come vedete nell'esempio sulla slide, dato un blocco di codice COBOL che formatta l'orario, XMainframe genera una summarization completa che spiega cosa fa il codice passo per passo.
+**Multi-Head Latent Attention**
+MLA è un'innovazione introdotta da DeepSeek-V2. L'idea è comprimere i vettori K e V in uno spazio latente a dimensionalità ridotta prima di memorizzarli nel cache.
+In pratica:
+Invece di cacheare K e V nella loro dimensione originale (es. 128 dim per head × 32 heads = 4096 dim totali)
+Si proiettano in uno spazio latente compresso (es. 512 dim)
+Al momento dell'uso, si decomprimono on-the-fly
 
-**I use case principali sono due: aiutare gli sviluppatori a comprendere codice legacy di cui non hanno documentazione, e valutare la fattibilità di una migrazione identificando le parti più complesse**
+**RoPE**
+ codifica le posizioni relative tra token attraverso rotazioni nello spazio complesso, permettendo una migliore generalizzazione su sequenze lunghe.
+Rotary Position Embedding codifica la posizione ruotando i vettori Query e Key nello spazio complesso.
+L'intuizione matematica:
+Ogni posizione p corrisponde a una rotazione di angolo θ·p
+Quando calcoli il dot product Q·K tra due token alle posizioni i e j, il risultato dipende solo dalla distanza relativa (i - j), non dalle posizioni assolute
+Vantaggi:
+Extrapolation: generalizza meglio a sequenze più lunghe di quelle viste in training
+Relative positioning: cattura naturalmente le relazioni relative tra token
+Efficienza: si applica direttamente a Q e K senza parametri aggiuntivi
 
-XMainframe è disponibile in tre versioni, ciascuna con uno scopo specifico.
-BASE-7B è il modello grezzo dopo il continued pre-training. È pensato per chi ha un dataset interno aziendale e vuole fare fine-tuning custom. Non è pronto per l'uso diretto, ma è la base per adattamenti specifici.
 
-INSTRUCT-7B è la versione production-ready. È stata istruita a seguire comandi in linguaggio naturale, quindi funziona immediatamente come chatbot o tool di supporto per sviluppatori. È ideale per deployment immediato in IDE come VS Code o per generazione automatica di documentazione.
+**[SLIDE 2 - Come funziona]**
+Il workflow di XMainframe si articola su tre task principali di output: complexity assessment, code explanation in linguaggio naturale, e refactoring suggestions.
+Ma il vero valore aggiunto sta nel come questo modello è stato costruito. Gli autori identificano tre gap fondamentali nei LLM esistenti per mainframe modernization:
+Primo: limited training on mainframe languages. I CodeLLM esistenti sono addestrati su un ampio spettro di linguaggi, ma la quantità di codice COBOL disponibile online è insufficiente per un apprendimento adeguato. Inoltre, le organizzazioni tendono a mantenere private le loro codebase mainframe per requisiti di security del settore finanziario. 
+Secondo: lack of proper benchmarks. Prima di XMainframe non esisteva un benchmark standardizzato per valutare la conoscenza mainframe dei LLM.
+Terzo: complexity beyond code generation. La modernizzazione mainframe richiede molto più che generare codice COBOL — le organizzazioni vogliono migrare i loro sistemi verso altri linguaggi, quindi i LLM devono possedere conoscenza che va oltre la pura code generation.
+Questi use case — comprensione del codice e valutazione della migrazione — si inseriscono nella fase di code comprehension del ciclo di modernizzazione, che in letteratura è identificata come responsabile del 40-60% dell'effort totale di un progetto di migrazione.
 
-INSTRUCT-10.5B è la versione più potente, con il 50% di parametri in più ottenuti tramite depth up-scaling. Offre accuracy più elevata ed è raccomandata per analisi critiche pre-migrazione su progetti mission-critical, dove serve il massimo livello di comprensione. Richiede però maggiore capacità computazionale - servono GPU con almeno 24GB di memoria.
 
-I risultati del benchmark MainframeBench mostrano performance impressionanti. Guardiamo la riga XMainframe-Instruct 10.5B: ottiene 0.96 su BERTScore, 0.74 su RougeL e Meteor, e 62.58 su BLEU-4. Per darvi un confronto, GPT-4 ottiene solo 0.85 su BERTScore. Questo dimostra che la specializzazione vince sulla dimensione pura del modello."
+**[SLIDE 3 - Varianti del modello e Training]**
+
+"Partiamo dal training data, che è il cuore del contributo. Il Mainframe-Training Dataset consiste di 236 milioni di token provenienti da documentazione sulla tecnologia mainframe e costrutti COBOL GitHub, raccolti attraverso due canali: GitHub API per progetti COBOL open-source e web scraping di documentazione ufficiale.
+Ma il dato più interessante riguarda il Mainframe-Instruct Dataset, costruito con una pipeline in 5 step:
+
+Step 1: 300 seed data instances annotate manualmente da domain expert
+Step 2: Data augmentation tramite LLM commerciali per arricchire il dataset
+Step 3-5: Filtering, validation e quality assurance
+
+Nel pre-training, combinano il Mainframe-Training Dataset con SlimOrca-Dedup — questo è fondamentale per preservare le capability generali del modello ed evitare catastrophic forgetting durante il domain adaptation.
+Riguardo alle tre varianti:
+Il BASE-7B è il checkpoint pre-trained senza instruction tuning. È pensato per organizzazioni che hanno dataset COBOL proprietari e vogliono fare ulteriore fine-tuning. In contesti enterprise questo è lo scenario più comune, dato che il codice COBOL contiene business logic sensibile che non può essere esposta a modelli esterni.
+L'INSTRUCT-7B è la versione instruction-tuned, pronta per deployment in IDE come VS Code extension o come backend di chatbot interni.
+L'INSTRUCT-10.5B è dove sta l'innovazione architetturale più interessante. XMainframe 10.5B è espanso da DeepSeek-Coder 7B attraverso il metodo di depth up-scaling, senza introdurre moduli aggiuntivi o meccanismi di dynamic expert selection GitHub — quindi niente Mixture-of-Experts.
+Esperimenti precedenti hanno dimostrato che i modelli scalati in profondità inizialmente performano peggio rispetto ai loro corrispettivi base. Tuttavia, il metodo di depth-wise scaling isola l'eterogeneità nel modello scalato, permettendo un rapido recupero delle performance. arXiv Questo è esattamente quello che osservano gli autori: dopo il continued training sul Mainframe-Training Dataset e il fine-tuning sul Mainframe-Instruct Dataset, il modello 10.5B supera significativamente la versione 7B."
+
+**Depth up-scaling**
+Duplichi i layer esistenti del transformer e li impili verticalmente.
+In pratica, se hai un modello con 32 layer:
+Prendi alcuni layer (es. gli ultimi 16)
+Li duplichi
+Li concateni al modello originale
+Ottieni un modello con 48 layer
+Il modello 10.5B di XMainframe è ottenuto così: partono da DeepSeek-Coder 7B e aggiungono layer duplicati.
+Il problema del depth scaling
+Quando duplichi i layer, inizialmente il modello performa peggio del modello base. Perché? I layer duplicati sono identici agli originali, ma il modello non è stato addestrato a usarli in sequenza così lunga. C'è "eterogeneità" nel flusso di informazione.
+Perché funziona comunque?
+La ricerca citata (Kim et al., 2023) ha scoperto che questa eterogeneità si isola e si risolve rapidamente con un po' di training aggiuntivo. Dopo poche epoche di continued training, il modello scalato recupera e supera le performance del modello base.
+
+
+
+**[SLIDE 3 - Benchmark]**
+
+"Gli autori introducono MainframeBench, che è disponibile pubblicamente su HuggingFace — questo è un contributo importante perché prima non esisteva un benchmark standardizzato per questo dominio.
+MainframeBench comprende tre subtask:
+Multiple Choice Questions — per valutare la conoscenza fattuale sui mainframe
+Question Answering — per valutare la capacità di reasoning
+COBOL Code Summarization — per valutare la comprensione del codice
+La tabella che vedete mostra i risultati sul task di summarization. XMainframe-Instruct 10.5B raggiunge un BERTScore di 0.96 contro 0.88 di GPT-3.5, un RougeL di 0.74 contro 0.28, e un BLEU-4 di 62.58 — circa sei volte superiore rispetto a GPT-3.5 e nove volte rispetto a GPT-4.
+Sulle multiple-choice questions, XMainframe supera DeepSeek-Coder con un incremento del 30% in accuracy. Sul question answering, raggiunge un BLEU score di 22.02, che è il doppio di Mixtral-Instruct 8x7B e cinque volte meglio di DeepSeek-Coder-Instruct 33B. 
+Un aspetto metodologico importante: la valutazione è stata condotta con zero-shot prompting e temperatura fissata approssimativamente a 0, favorendo l'exploitation della conoscenza del modello rispetto all'exploration. 
+C'è però un insight qualitativo interessante che spiega questi numeri: gli sviluppatori tendono a preferire summary concisi e comprensivi per le funzioni COBOL rispetto a quelli prolissi. XMainframe-Instruct ha la capacità di riconoscere e applicare questa osservazione, producendo summary concisi. Al contrario, altri LLM spesso generano risposte più lunghe che non si allineano alle preferenze degli sviluppatori. "
+
+
+
+
+
+
+
+
 
 ### 4.2 Migration Exp
-MigrationExp usa Machine Learning classico per risolvere un problema specifico: in che ordine migrare i file?
-Il sistema è basato su learning-to-rank, la stessa tecnologia usata da Bing Search per ordinare risultati. È un decision support system.
 
-L'aspetto innovativo è che il modello è stato trainato su migrazioni reali fatte da sviluppatori in progetti open-source. Ha imparato dalle scelte dei developer esperti: quali file hanno migrato per primi? Perché? E questo pattern si ripete?
-
-MigrationExp funziona in due fasi classiche di machine learning: training e serving.
-Development Phase - Training:
-L'input sono progetti open-source già migrati da Java a Kotlin. Il processo estrae ogni commit che ha migrato almeno un file. Per ogni file nel progetto, estrae 56 metriche - complessità, coupling, size, ruolo Android, e altre. Crea poi una label: 1 se il file è stato migrato in quel commit, 0 altrimenti.
-Questi dati vengono usati per trainare un modello LambdaMART, un algoritmo di gradient boosted decision trees specifico per ranking. È un approccio pairwise learning-to-rank: il modello impara che il file A dovrebbe essere ranked più alto del file B.
-L'output è un modello trained pronto per deployment.
-
-Serving Phase - Production:
-In produzione, l'input è un progetto parzialmente migrato - alcuni file sono già in Kotlin, altri ancora in Java.
-Il processo estrae le stesse 56 features dai file Java non ancora migrati, crea un vettore per ogni file candidato, fa una query al modello passando tutti i vettori.
-L'output è una lista ranked con un 'predicted relevance score' per ogni file. Score alto significa alta priorità di migrazione. Gli sviluppatori possono prendere i file in cima alla lista e iniziare da quelli.
+[SLIDE 1 - Introduzione]
+"MigrationExp è un Decision Support System per la migrazione incrementale di applicazioni, pubblicato su Information and Software Technology nel 2023. Il contributo principale è l'applicazione di tecniche di Learning-to-Rank per raccomandare l'ordine ottimale di migrazione dei file.
+Ma prima di entrare nel dettaglio tecnico, voglio contestualizzare perché questo problema è rilevante.
+In letteratura si distinguono due strategie di migrazione: la one-step migration (o Big Bang), dove si riscrive tutto da zero, e la incremental migration (o Chicken Little), dove si migra gradualmente file per file. La migrazione incrementale ha vantaggi significativi: il rischio è controllabile, se uno step fallisce si ripete solo quello, e le risorse richieste sono distribuite nel tempo.
+Tuttavia, la migrazione incrementale introduce un problema non banale: in che ordine migro i file? La scelta sbagliata può generare errori di compilazione, runtime exceptions, o richiedere workaround costosi.
+Il paper presenta un caso reale che illustra questo problema: uno sviluppatore stava migrando un'applicazione Vaadin da Java a Kotlin. Ha scoperto che migrando Review.java prima di Category.java, l'applicazione compilava ma crashava a runtime con un'eccezione di tipo InvalidTemplateModelException. Invertendo l'ordine — migrando prima Category.java — tutto funzionava correttamente. Come ha scritto lo stesso sviluppatore: questi errori sono dovuti alla mancanza di una strategia di migrazione ottimale.
+MigrationExp nasce per risolvere esattamente questo problema: dato un progetto da migrare, suggerisce quali file migrare prima basandosi su pattern appresi da migrazioni reali.
 
 
+[SLIDE 2 - Training Phase e Serving Phase]
+"L'architettura di MigrationExp si articola in due fasi distinte: Development Phase e Serving Phase.
+Development Phase — Come si costruisce il modello
+Il training data proviene da progetti open-source che hanno effettuato migrazioni da Java a Kotlin. Gli autori hanno costruito due dataset:
 
-Vediamo un esempio concreto. Simple Calendar Pro è un'app Android pubblicata su Google Store con oltre 100,000 download. Era originariamente scritta in Java ed è stata migrata completamente a Kotlin in modo incrementale.
-Prendiamo uno snapshot al commit 2d1c59, durante la migrazione. A questo punto l'app ha 38 file già migrati in Kotlin e 6 file Java candidati per la migrazione.
-MigrationExp analizza questi 6 file e li ordina per priorità. AboutActivity.java ottiene score 0.96 - la massima priorità. Seguono MyWidgetProvider con 0.58, WidgetConfigureActivity con 0.42, e così via. Constants.java ha addirittura score negativo (-0.24), quindi andrebbe migrato per ultimo.
-Cosa hanno fatto davvero gli sviluppatori nel commit successivo? Hanno migrato AboutActivity.java, esattamente il file raccomandato da MigrationExp. In questo caso, MAP@1 è perfetto: 1.0.
-Questo dimostra che il modello ha catturato correttamente i pattern decisionali degli sviluppatori. Notate che questo ordine non segue la guideline Google, che suggerirebbe di migrare prima Utils.java (utility class) rispetto a Activity files.
+GitHubj2k: 1179 progetti, 7275 commits con migrazioni, 27.375 file migrati — usato per il training
+Androidj2k: 266 applicazioni Android da FAMAZOA, 3118 commits, 8754 file migrati — usato per il testing
+
+Questa separazione è importante: evita il classico problema dell'overfitting da cross-validation, dove si assume di conoscere già il 90% del dominio.
+Per ogni commit con migrazione, il sistema:
+
+Estrae le features da tutti i file Java presenti in quel commit
+Etichetta i file come migrated (1) o not migrated (0)
+Crea una query nel formato Learning-to-Rank
+
+Le features estratte sono 56 metriche raggruppate in categorie:
+
+Size: SLOC, numero di metodi, numero di campi
+Complexity: WMC (Weighted Method per Class), max nested blocks
+Coupling: CBO (Coupling Between Objects), RFC (Response For a Class)
+Cohesion: LCOM, TCC, LCC
+Inheritance: DIT (Depth Inheritance Tree)
+Readability: numero di loop, assignment, comparisons, string literals
+Android-specific: 12 metriche come isActivity, isView, isFragment, isBroadcastReceiver
+Java-specific: numero di static methods, inner classes, lambdas, anonymous classes
+
+Perché Learning-to-Rank?
+Gli algoritmi di Learning-to-Rank si dividono in tre approcci: pointwise, pairwise e listwise.
+Il pointwise considera ogni documento (file) indipendentemente — ma nella migrazione, la decisione di migrare un file dipende dal contesto del progetto.
+Il pairwise considera coppie di documenti: dato il commit C, il file F₁ che è stato migrato deve essere rankato più in alto del file F₂ che non è stato migrato. Questo cattura la decisione relativa dello sviluppatore.
+Il listwise considera l'intera lista, ma è più complesso da ottimizzare.
+Gli autori scelgono l'approccio pairwise con LambdaMART, un algoritmo sviluppato da Microsoft basato su gradient boosted decision trees. LambdaMART è stato dimostrato essere tra i best-performing su benchmark pubblici di information retrieval. L'implementazione usa XGBoost come backend.
+Serving Phase — Come si usa il modello
+Dato un progetto P da migrare, con N file Java candidati:
+
+Si estraggono le stesse 56 features per ogni file
+Si crea una query con N vettori di features (senza label)
+Il modello assegna un predicted relevance score a ogni file
+Si ordina per score decrescente → i file in cima sono quelli da migrare prima"
+
+
+[SLIDE 3 - Use Case Simple Calendar Pro]
+"Vediamo un esempio concreto: Simple Calendar Pro, un'applicazione Android con oltre 100.000 download su Google Play.
+L'app è stata completamente migrata da Java a Kotlin in 2 mesi, attraverso 202 commits incrementali — un caso reale di Chicken Little migration.
+Consideriamo la versione al commit 2d1c59: 38 file già migrati in Kotlin, 6 file Java ancora da migrare.
+MigrationExp analizza i 6 file candidati e produce questo ranking:
+FilePredicted RelevanceActual MigrationAboutActivity.java0.96✓ MigratoMyWidgetProvider.java0.58—WidgetConfigureActivity.java0.42—Utils.java0.32—LicenseActivity.java0.27—Constants.java-0.24—
+Il modello assegna il punteggio più alto (0.96) a AboutActivity.java, che è esattamente il file che lo sviluppatore ha effettivamente migrato nel commit successivo. MAP@1 = 1 — predizione perfetta.
+Nota interessante: questo ordine contraddice la guideline ufficiale di Google, che suggerisce di migrare prima le utility classes (come Utils.java) e poi le Activity. Il modello ha imparato dai dati che gli sviluppatori reali non seguono necessariamente quella guideline."
+
+[SLIDE MANCANTE - Risultati Quantitativi] (ti suggerisco di aggiungerla)
+"I risultati della valutazione mostrano le performance del modello in termini di Mean Average Precision at K (MAP@K):
+StrategiaMAP@1MAP@5MAP@10Random0.1880.2680.278Google's Guideline0.1080.1900.202MigrationExpJ2K0.2250.2930.308
+L'improvement rispetto alla baseline Random è del 10-20%. Ma il dato più significativo è l'improvement rispetto a Google's guideline: +108% a k=1, e oltre il 50% per tutti i valori di k.
+Questo suggerisce che le guideline ad alto livello di Google — migrare prima data classes, poi test, poi utility — non riflettono il comportamento reale degli sviluppatori.
+Riguardo alla feature importance calcolata da XGBoost, le features più influenti sono:
+
+isView (gain: 29.54)
+isBroadcastReceiver (gain: 8.05)
+isService (gain: 7.98)
+isContentProvider (gain: 6.28)
+
+Questo indica che il modello basa le sue decisioni principalmente sul tipo di componente Android — un'informazione che le guideline generiche non catturano."
+
+[CLOSING - Considerazioni critiche e rilevanza per COBOL]
+"Gli autori stessi riconoscono che c'è room for improvement: MAP@10 = 0.308 è lontano dal valore ideale di 1.0. Le direzioni future includono:
+
+Hyperparameter tuning di XGBoost
+Data balancing con tecniche come SMOTE
+Feature engineering aggiuntivo, ad esempio metriche di coupling tra file già migrati e non migrati
+Interpretabilità: integrazione con SHAP per spiegare perché un file è suggerito
+
+Rilevanza per la migrazione COBOL
+Sebbene il paper si focalizzi su Java→Kotlin, l'approccio è language-agnostic. La metodologia può essere adattata a migrazioni COBOL→Java definendo:
+
+Feature set appropriato (metriche COBOL-specific invece di Android-specific)
+Training data da progetti enterprise migrati
+Considerazione delle dipendenze tra programmi COBOL, copybook, e JCL
+
+Il valore principale per il nostro contesto è dimostrare che un approccio data-driven basato su Learning-to-Rank può superare le guideline manuali, catturando pattern impliciti nelle decisioni degli sviluppatori esperti.
 
 ---
 
