@@ -35,17 +35,21 @@ MSExtractor formula la scomposizione come problema di ottimizzazione multi-obiet
 
 ## 4. TOOL DI SUPPORTO ALLA MIGRAZIONE
 Adesso analizziamo due tool di supporto alla migrazione
-Il primo, XMainframe, è un esempio di approccio basato su Deep Learning - utilizza un Large Language Model specializzato addestrato specificamente per comprendere COBOL.
+Sono sistemi che assistono lo sviluppatore nelle decisioni durante la migrazione del codebase legacy.
+Quelli che analizziamo sono due
 
-Il secondo, MigrationExp, rappresenta l'approccio Machine Learning classico - usa algoritmi di learning-to-rank per imparare da migrazioni reali.
 
-Entrambi forniscono supporto decisionale agli sviluppatori durante il processo di migrazione.
+
+Il primo, XMainframe, è un esempio di approccio basato su Deep Learning - utilizza un Large Language Model specializzato addestrato specificamente per la comprensione COBOL.
+
+Il secondo, MigrationExp, rappresenta l'approccio Machine Learning classico - usa algoritmi di learning-to-rank per identificare l'ordine di file da migrare durante un processo di migrazione.
+
+Forniscono supporto decisionale agli sviluppatori durante il processo di migrazione. Fanno parte del prccesso di analisi di pre-migrazione.
 
 
 ### 4.1 XMainframe
 **[SLIDE 1 - Introduzione]**
-XMainframe rappresenta il primo LLM open-source specificamente ottimizzato per la comprensione di sistemi mainframe e codebase COBOL. È stato sviluppato da FPT Software AI Center e pubblicato su arXiv ad agosto 2024.
-Per contestualizzare il problema che questo modello affronta: IBM stima che esistano tra 200 e 220 miliardi di linee di codice COBOL ancora in produzione, prevalentemente in settori mission-critical come banking, insurance e government. Il costo di riscrittura manuale è stimato tra 32 e 50 centesimi per linea, configurando quello che viene definito un hundred-billion-dollar challenge MarkTechPost.
+XMainframe rappresenta il primo LLM open-source specificamente ottimizzato per la comprensione di sistemi mainframe e codebase COBOL. È stato sviluppato da FPT Software AI Center e pubblicato su arXiv ad agosto 2024
 La scelta di DeepSeek-Coder 7B come base model è strategica: DeepSeek ha dimostrato performance state-of-the-art su code understanding tasks, con un'architettura decoder-only che utilizza Multi-Head Latent Attention per la compressione del KV-cache e RoPE per il positional encoding. Questo lo rende un candidato ideale per domain adaptation verso linguaggi a bassa risorsa come COBOL
 
 
@@ -72,58 +76,118 @@ Relative positioning: cattura naturalmente le relazioni relative tra token
 Efficienza: si applica direttamente a Q e K senza parametri aggiuntivi
 
 
-**[SLIDE 2 - Come funziona]**
-Il workflow di XMainframe si articola su tre task principali di output: complexity assessment, code explanation in linguaggio naturale, e refactoring suggestions.
-Ma il vero valore aggiunto sta nel come questo modello è stato costruito. Gli autori identificano tre gap fondamentali nei LLM esistenti per mainframe modernization:
-Primo: limited training on mainframe languages. I CodeLLM esistenti sono addestrati su un ampio spettro di linguaggi, ma la quantità di codice COBOL disponibile online è insufficiente per un apprendimento adeguato. Inoltre, le organizzazioni tendono a mantenere private le loro codebase mainframe per requisiti di security del settore finanziario. 
-Secondo: lack of proper benchmarks. Prima di XMainframe non esisteva un benchmark standardizzato per valutare la conoscenza mainframe dei LLM.
-Terzo: complexity beyond code generation. La modernizzazione mainframe richiede molto più che generare codice COBOL — le organizzazioni vogliono migrare i loro sistemi verso altri linguaggi, quindi i LLM devono possedere conoscenza che va oltre la pura code generation.
-Questi use case — comprensione del codice e valutazione della migrazione — si inseriscono nella fase di code comprehension del ciclo di modernizzazione, che in letteratura è identificata come responsabile del 40-60% dell'effort totale di un progetto di migrazione.
+**[SLIDE 2 - GAP LLM esistenti]**
+Prima di vedere come funziona XMainframe, chiediamoci: perché è stato necessario costruire un LLM specializzato? I CodeLLM esistenti — CodeLlama, StarCoder, Codex — non erano sufficienti?
+Gli autori identificano tre gap fondamentali:
+Gap 1: Training data insufficiente.
+I CodeLLM general-purpose sono addestrati su un ampio spettro di linguaggi, ma la quantità di codice COBOL disponibile pubblicamente è insufficiente. E c'è un problema strutturale: le organizzazioni enterprise — banche, assicurazioni, enti governativi — mantengono le loro codebase mainframe private per requisiti di security e compliance. Quindi il dato semplicemente non esiste nei dataset di training pubblici.
+Gap 2: Assenza di benchmark.
+Prima di XMainframe, non esisteva un benchmark standardizzato per valutare quanto un LLM 'conosca' il mainframe. Come fai a sapere se il tuo modello è migliorato se non hai una metrica? Gli autori hanno dovuto creare MainframeBench proprio per colmare questa lacuna.
+Gap 3: Comprensione oltre la generazione.
+La modernizzazione mainframe non è generare codice COBOL — le organizzazioni vogliono migrare via da COBOL. Quindi il modello deve possedere una comprensione semantica profonda: capire cosa fa il codice, valutarne la complessità, identificare dipendenze. Questo va oltre le capability di code completion dei LLM standard.
+Questi gap si traducono in un problema concreto: la code comprehension — capire il codice legacy prima di toccarlo — rappresenta il 40-60% dell'effort totale di un progetto di migrazione. È qui che XMainframe si posiziona.
 
 
-**[SLIDE 3 - Varianti del modello e Training]**
+**[SLIDE 3 - Architettura per la specializzazione del dominio]**
 
-"Partiamo dal training data, che è il cuore del contributo. Il Mainframe-Training Dataset consiste di 236 milioni di token provenienti da documentazione sulla tecnologia mainframe e costrutti COBOL GitHub, raccolti attraverso due canali: GitHub API per progetti COBOL open-source e web scraping di documentazione ufficiale.
-Ma il dato più interessante riguarda il Mainframe-Instruct Dataset, costruito con una pipeline in 5 step:
+Vediamo ora come è stato costruito XMainframe per colmare questi gap.
+Modello base: DeepSeek-CoderLa scelta di DeepSeek-Coder non è casuale. È un CodeLLM con architettura decoder-only, pre-trainato su un corpus di 87 linguaggi di programmazione. Un elemento chiave è la context window di 16K token ottenuta grazie a RoPE — Rotary Position Embedding.
+Questo è fondamentale per COBOL: i programmi legacy enterprise possono essere molto lunghi, con file da migliaia di linee. Una context window ridotta significherebbe perdere informazioni critiche.
+Pipeline di Training a due fasi:
+Fase 1 - Continual Pre-Training:
+Gli autori hanno costruito un dataset domain-specific da zero:
+33,561 file COBOL raccolti da GitHub, filtrati per qualità e deduplicati con MinHash e Locality Sensitive Hashing — per un totale di 228 milioni di token
+14,274 documenti di documentazione mainframe ufficiale — 8 milioni di token
+Dati general-purpose da SlimOrca-Dedup per mantenere le capability di ragionamento e linguaggio naturale
+Il totale è 236 milioni di token di dati domain-specific. Il Continual Pre-Training estende la conoscenza del modello base senza perdere le capability generali — un aspetto critico per evitare il catastrophic forgetting.
+Fase 2 - Instruction Tuning:
+Qui il modello impara a seguire istruzioni. Gli autori hanno creato Mainframe-Instruct, un dataset di 53,351 coppie istruzione-risposta generate tramite data augmentation con GPT-4-turbo come quality scorer.La differenza tra le due fasi è cruciale:
 
-Step 1: 300 seed data instances annotate manualmente da domain expert
-Step 2: Data augmentation tramite LLM commerciali per arricchire il dataset
-Step 3-5: Filtering, validation e quality assurance
+Il pre-training insegna al modello cosa sa — la conoscenza di COBOL
+L'instruction tuning insegna al modello come rispondere — trasforma la conoscenza in output utili
 
-Nel pre-training, combinano il Mainframe-Training Dataset con SlimOrca-Dedup — questo è fondamentale per preservare le capability generali del modello ed evitare catastrophic forgetting durante il domain adaptation.
-Riguardo alle tre varianti:
-Il BASE-7B è il checkpoint pre-trained senza instruction tuning. È pensato per organizzazioni che hanno dataset COBOL proprietari e vogliono fare ulteriore fine-tuning. In contesti enterprise questo è lo scenario più comune, dato che il codice COBOL contiene business logic sensibile che non può essere esposta a modelli esterni.
-L'INSTRUCT-7B è la versione instruction-tuned, pronta per deployment in IDE come VS Code extension o come backend di chatbot interni.
-L'INSTRUCT-10.5B è dove sta l'innovazione architetturale più interessante. XMainframe 10.5B è espanso da DeepSeek-Coder 7B attraverso il metodo di depth up-scaling, senza introdurre moduli aggiuntivi o meccanismi di dynamic expert selection GitHub — quindi niente Mixture-of-Experts.
-Esperimenti precedenti hanno dimostrato che i modelli scalati in profondità inizialmente performano peggio rispetto ai loro corrispettivi base. Tuttavia, il metodo di depth-wise scaling isola l'eterogeneità nel modello scalato, permettendo un rapido recupero delle performance. arXiv Questo è esattamente quello che osservano gli autori: dopo il continued training sul Mainframe-Training Dataset e il fine-tuning sul Mainframe-Instruct Dataset, il modello 10.5B supera significativamente la versione 7B."
 
-**Depth up-scaling**
-Duplichi i layer esistenti del transformer e li impili verticalmente.
-In pratica, se hai un modello con 32 layer:
-Prendi alcuni layer (es. gli ultimi 16)
-Li duplichi
-Li concateni al modello originale
-Ottieni un modello con 48 layer
-Il modello 10.5B di XMainframe è ottenuto così: partono da DeepSeek-Coder 7B e aggiungono layer duplicati.
-Il problema del depth scaling
-Quando duplichi i layer, inizialmente il modello performa peggio del modello base. Perché? I layer duplicati sono identici agli originali, ma il modello non è stato addestrato a usarli in sequenza così lunga. C'è "eterogeneità" nel flusso di informazione.
-Perché funziona comunque?
-La ricerca citata (Kim et al., 2023) ha scoperto che questa eterogeneità si isola e si risolve rapidamente con un po' di training aggiuntivo. Dopo poche epoche di continued training, il modello scalato recupera e supera le performance del modello base.
+MainframeBench — Il contributo scientifico:Prima di XMainframe non esisteva un modo standardizzato per valutare la conoscenza mainframe di un LLM. Gli autori hanno creato MainframeBench, il primo benchmark del settore, con tre task:
+Multiple Choice Questions — 1,931 domande su sintassi COBOL, costrutti CICS/IMS, best practices
+Question Answering — 2,598 domande aperte sulla semantica e architettura mainframe
+COBOL Code Summarization — 2,523 task di spiegazione di codice COBOL
+Questo benchmark è ora disponibile per la comunità e permette di confrontare oggettivamente qualsiasi LLM su task mainframe-specific."
 
 
 
-**[SLIDE 3 - Benchmark]**
+**[SLIDE 4 - Benchmark]**
+Vediamo i risultati su MainframeBench. Questi numeri dimostrano l'efficacia della specializzazione di dominio.
 
-"Gli autori introducono MainframeBench, che è disponibile pubblicamente su HuggingFace — questo è un contributo importante perché prima non esisteva un benchmark standardizzato per questo dominio.
-MainframeBench comprende tre subtask:
-Multiple Choice Questions — per valutare la conoscenza fattuale sui mainframe
-Question Answering — per valutare la capacità di reasoning
-COBOL Code Summarization — per valutare la comprensione del codice
-La tabella che vedete mostra i risultati sul task di summarization. XMainframe-Instruct 10.5B raggiunge un BERTScore di 0.96 contro 0.88 di GPT-3.5, un RougeL di 0.74 contro 0.28, e un BLEU-4 di 62.58 — circa sei volte superiore rispetto a GPT-3.5 e nove volte rispetto a GPT-4.
-Sulle multiple-choice questions, XMainframe supera DeepSeek-Coder con un incremento del 30% in accuracy. Sul question answering, raggiunge un BLEU score di 22.02, che è il doppio di Mixtral-Instruct 8x7B e cinque volte meglio di DeepSeek-Coder-Instruct 33B. 
-Un aspetto metodologico importante: la valutazione è stata condotta con zero-shot prompting e temperatura fissata approssimativamente a 0, favorendo l'exploitation della conoscenza del modello rispetto all'exploration. 
-C'è però un insight qualitativo interessante che spiega questi numeri: gli sviluppatori tendono a preferire summary concisi e comprensivi per le funzioni COBOL rispetto a quelli prolissi. XMainframe-Instruct ha la capacità di riconoscere e applicare questa osservazione, producendo summary concisi. Al contrario, altri LLM spesso generano risposte più lunghe che non si allineano alle preferenze degli sviluppatori. "
+Multiple Choice Question Task:
+Su questo task di classificazione, XMainframe-Instruct 10.5B raggiunge 77.89% di accuracy — superando GPT-4 che si ferma a 73.90%.
+Ma il dato più significativo è il confronto con il modello base: DeepSeek-Coder-Instruct 6.7B, da cui XMainframe deriva, raggiunge solo 47.49%. Questo significa un miglioramento di +30 punti percentuali — ottenuto esclusivamente tramite domain adaptation, senza aumentare i parametri del modello.
+Anche la versione 7B di XMainframe (68.57%) supera DeepSeek-Coder 33B (53.29%), che ha 5 volte più parametri. Questo dimostra che la specializzazione batte la scala quando si tratta di task domain-specific.
 
+Question Answering Task:
+Qui misuriamo la qualità delle risposte con metriche NLP standard: MAP, F1-Score, BERTScore, BLEU-4.
+XMainframe-Instruct raggiunge un BLEU-4 di 20.93 — circa 5 volte superiore a GPT-4 (5.71) e DeepSeek-Coder (4.09-4.41). Il MAP di 0.43-0.45 contro 0.09-0.12 dei competitor conferma che XMainframe produce risposte più precise e contestualmente rilevanti.
+
+
+COBOL Code Summarization:
+Questo è il task più rilevante per il nostro contesto di migrazione — la capacità di spiegare cosa fa un pezzo di codice COBOL.
+XMainframe-Instruct 10.5B raggiunge un BLEU-4 di 62.58 — questo è 8 volte superiore a GPT-4 (7.42) .
+Guardate anche BERTScore: 0.96 per XMainframe contro 0.85 per GPT-4. Questo indica che le spiegazioni generate sono semanticamente molto più allineate con le reference rispetto ai modelli general-purpose.
+Perché questi risultati?
+
+La chiave è che i modelli general-purpose, pur essendo enormemente più grandi, non hanno visto abbastanza COBOL durante il training. XMainframe dimostra che un modello piccolo ma specializzato può superare modelli da centinaia di miliardi di parametri su task di nicchia. È un principio importante: per domini verticali come il mainframe, il domain adaptation è più efficace dello scaling bruto.
+
+**[SLIDE 5 - Come funziona?]**
+
+"Dal punto di vista dell'utente finale, come si usa concretamente XMainframe?
+Input:
+Il modello accetta codice COBOL — può essere un singolo paragrafo, una sezione, o un intero programma fino alla context window di 16K token.
+Output — tre capability principali:
+
+Spiegazione della complessità: Il modello analizza il codice e fornisce una valutazione della complessità strutturale — numero di branch, livelli di nesting, dipendenze esterne. Questo è fondamentale per la migration assessment: stimare l'effort prima di iniziare.
+
+Spiegazione del codice COBOL: Genera summary in linguaggio naturale che descrivono cosa fa il codice. Come vedete nell'esempio — un paragrafo che gestisce formattazione di timestamp viene descritto in modo chiaro e conciso. Gli sviluppatori, anche quelli che non conoscono COBOL, possono capire la business logic.
+
+Refactoring Suggestions: Il modello suggerisce miglioramenti al codice — pattern più moderni, eliminazione di ridondanze, preparazione per la migrazione. Questo supporta il processo di code cleaning prima della conversione.
+
+Use Case nel ciclo di modernizzazione:
+XMainframe si posiziona nella fase di code comprehension — quella che, ricordiamo, rappresenta il 40-60% dell'effort totale.
+
+Comprensione del codice: Onboarding di nuovi sviluppatori su codebase legacy, documentazione automatica, knowledge transfer quando gli esperti COBOL vanno in pensione
+Valutazione della migrazione: Assessment pre-migrazione, identificazione di moduli critici, stima della complessità di conversione
+
+
+
+[SLIDE 6 - Modelli disponibili]
+"XMainframe è rilasciato in tre varianti, ciascuna ottimizzata per use case diversi.
+BASE-7B — Il modello grezzo:
+Questo è il foundation model dopo il Continual Pre-Training, senza instruction tuning.
+Quando usarlo:
+
+Quando avete un dataset interno all'azienda con esempi specifici del vostro dominio
+Quando volete adattare il modello ai pattern e alle convenzioni della vostra codebase COBOL specifica
+Per creare versioni custom fine-tuned sulle vostre necessità
+
+È la scelta giusta se avete un team ML interno e volete massimizzare la performance sul vostro specifico contesto enterprise.
+INSTRUCT-7B — Il modello pronto all'uso:
+Questo è il modello dopo instruction tuning — sa già rispondere a domande, generare summary, dare suggerimenti.
+Quando usarlo:
+
+Deployment immediato in IDE come assistente per sviluppatori
+ChatBot interno per query sulla codebase
+Generazione automatica di documentazione tecnica
+Quando volete risultati out-of-the-box senza training aggiuntivo
+
+È il punto di partenza raccomandato per la maggior parte delle organizzazioni.
+INSTRUCT-10.5B — La versione potenziata:
+Questa versione usa il depth up-scaling: il modello 7B viene espanso da 30 a 48 layer, raggiungendo 10.5 miliardi di parametri. Poi viene ri-trainato sul dataset mainframe.
+Quando usarlo:
+
+Quando avete capacità computazionale disponibile (GPU più potenti)
+Per refactoring suggestions più accurati
+Per analisi critica pre-migrazione su codice complesso
+Quando l'accuracy è prioritaria rispetto alla latency
+
+I benchmark mostrano che il 10.5B supera il 7B su tutti i task, con un salto significativo su COBOL summarization (62.58 vs 22.23 BLEU-4).
 
 
 
@@ -371,7 +435,15 @@ Non spiega perché certi path funzionano: il paper identifica pattern ma non for
 
 ---
 ## 6. TOOL AUTOMATICI BASATI SU AI
-
+Passiamo ora ai tool automatici di migrazione basati su AI.
+Cosa sono?
+A differenza dei tool di supporto che abbiamo visto — che assistono lo sviluppatore nelle decisioni — questi sistemi eseguono la conversione del codice in modo automatico o semi-automatico.
+A cosa servono?
+Prendono codice legacy in input e producono codice modernizzato in output, gestendo l'intero processo di conversione: analisi delle dipendenze, generazione del codice target, creazione di documentazione e test.
+Analizziamo due approcci:
+CAMF (Microsoft) rappresenta l'approccio multi-agente specializzato — tre agenti AI coordinati che si occupano rispettivamente di analisi, dependency mapping e conversione. È progettato specificamente per COBOL → Java/C#.
+REFORGE-AI rappresenta l'approccio documentation-first — genera prima documentazione completa del sistema legacy, poi usa quella documentazione come blueprint per la conversione automatica. È specifico per Java Legacy → Spring Boot, ma il pattern architetturale è applicabile anche ad altri contesti.
+Entrambi si basano su architetture agentiche con LLM (GPT-4) e dimostrano come l'AI possa automatizzare fasi che tradizionalmente richiedevano settimane di lavoro manuale.
 ### 6.1 Microsoft CAMF - COBOL Agentic Migration Factory 
 
 
@@ -382,145 +454,80 @@ I tre punti chiave che vedete:
 1. Tre agenti AI — Non un singolo LLM monolitico, ma un'architettura multi-agente con specializzazione per task. Ogni agente ha una persona distinta ottimizzata per il suo compito specifico.
 2. Prompt engineering (no training data) — Questo è cruciale: CAMF non richiede fine-tuning o dataset di training COBOL-Java. Usa LLM general-purpose (GPT-4.1, GPT-5 Mini) con prompt engineering sofisticato. Elimina i costi e la complessità di training task-specific, e permette di aggiornare immediatamente quando escono modelli migliori.
 3. Collaborazione con Bankdata — Non è un toy project su codice COBOL sintetico. È stato testato su codice reale di produzione bancario, con tutte le complessità che questo comporta: commenti in danese, pattern legacy, dipendenze intricate.
-Il framework è costruito su Microsoft Semantic Kernel con la Process Function per l'orchestrazione degli agenti. La scelta di Semantic Kernel rispetto ad AutoGen (usato nelle prime iterazioni) è dovuta alla sua maggiore maturità e alle capability di orchestrazione più robuste per scenari enterprise
 
-[SLIDE 2 - Architettura]
-"L'architettura che vedete nel diagramma segue un pattern di pipeline sequenziale con feedback loop. L'Orchestrator — implementato in MigrationProcess.cs — coordina i tre worker agents.
-Agent 1: COBOLAnalyzerAgent
-È il parsing engine fondamentale del sistema. La sua funzione è trasformare codice COBOL non strutturato in structured analysis data consumabile dagli altri agenti.
+
+[SLIDE 2 - Architettura ed orchestrator]
+CAMF è costruito su Semantic Kernel — il framework Microsoft per orchestrazione di agenti AI.
+ L'orchestrator coordina i tre agenti in una pipeline sequenziale: ogni agente riceve l'output del precedente e alimenta il successivo.
+
+LLM setting:
+Temperature 0.1: Output quasi-deterministico. Per code translation vogliamo consistenza, non creatività — lo stesso input deve produrre lo stesso output per permettere testing e validazione.
+TopP 0.5: Limita il sampling alle parole più probabili, riducendo variabilità.
+MaxTokens 32768: Permette risposte lunghe — necessario perché la conversione di un programma COBOL complesso può generare centinaia di righe di Java.
+
+Hybrid Database:
+CAMF usa due database complementari perché servono a rispondere a domande diverse:
+SQLite memorizza dati strutturati: contenuto dei file COBOL, analisi generate dagli agenti, codice Java prodotto, metadata dei run. È ottimizzato per query come 'dammi il contenuto del file X' o 'quali analisi abbiamo fatto?'
+Neo4j memorizza il grafo delle dipendenze: quali programmi chiamano quali altri, quali copybook sono inclusi dove, con quale tipo di statement e a quale linea. È ottimizzato per query di grafo come 'se modifico questo copybook, quali programmi sono impattati?' o 'mostrami tutti i programmi a 2 livelli di distanza da questo entry point'.
+
+
+**[SLIDE 3 - 3 agenti AI]**
+"Vediamo ora i tre agenti specializzati che compongono il sistema. Ogni agente ha un ruolo preciso nella pipeline e passa il suo output al successivo.
+
+Agent 1: COBOLAnalyzerAgent — Il Parsing Engine
+È il primo agente della catena. Riceve codice COBOL grezzo — spesso mal documentato, con commenti in lingue diverse, pattern legacy degli anni '70 — e lo trasforma in structured analysis data.
 Cosa estrae concretamente:
 
-Data Divisions con il loro scopo funzionale
-Procedure Divisions e il flow logico
-Variabili con level numbers, PIC clauses, group structures
-Paragraphs e sections con call relationships interni
-Embedded SQL/DB2 statements
-File access patterns e FD linkage
+Data Division: variabili con level numbers, PIC clauses, group structures. Ad esempio, riconosce che WS-CUSTOMER-BALANCE PIC 9(7)V99 è un campo numerico con 2 decimali.
+Procedure Division: il flow logico del programma, quali paragraphs esistono, come sono collegati
+Embedded SQL/DB2: statement SQL incorporati nel COBOL, fondamentali per capire l'accesso ai dati
+File access patterns: quali file vengono letti o scritti, con quale FD linkage
 
-I parametri di inferenza sono configurati per output deterministico:
-csharpvar executionSettings = new OpenAIPromptExecutionSettings
-{
-    MaxTokens = 32768,    // Gestisce programmi legacy di grandi dimensioni
-    Temperature = 0.1,    // Output quasi-deterministico
-    TopP = 0.5            // Output focalizzato
-};
 
-Agent 2: DependencyMapperAgent
-È il cervello architetturale del sistema. Analizza le relazioni tra programmi COBOL rilevando 8 tipi di statement con line numbers:
 
-CALL — Invocazioni di programmi esterni
-COPY — Inclusioni di copybook
-PERFORM — Procedure calls e loop interni
-EXEC SQL — Embedded SQL statements
-READ — Operazioni di lettura file
-WRITE — Operazioni di scrittura file
-OPEN — Apertura file handles
-CLOSE — Chiusura file handles
+Agent 2: DependencyMapperAgent — Il Cervello Architetturale
+Riceve l'analysis data e costruisce la mappa delle dipendenze tra programmi. Rileva 8 tipi di statement con il line number esatto:
+Statement Cosa indica
+CALL Invocazione di un programma esterno
+COPY  Inclusione di un copybook
+PERFORMChiamata a un paragrafo interno o estern
+EXEC SQLStatement SQL embeddedREAD / WRITE Operazioni I/O su fileOPEN / CLOSE Gestione file handles
+Ogni dipendenza include il numero di riga — ad esempio: Line 42: CALL 'FORMAT-BALANCE' USING WS-AMOUNT. Questo permette audit precisi e debug quando qualcosa non funziona.
+L'output ha due forme:
 
-Ogni dipendenza viene tracciata con il line number esatto, permettendo audit e debug precisi. L'output alimenta sia il grafo nel portal che il contesto per il JavaConverterAgent.
-Genera anche diagrammi Mermaid automaticamente — flowcharts che visualizzano le dipendenze con layout 'graph TB' o 'graph LR' basato sulla complessità del sistema.
-Agent 3: JavaConverterAgent
-Il transformation engine. Genera codice Java Quarkus production-ready dal COBOL analizzato. Ha guidelines specifiche per evitare 'JOBOL' — codice Java che replica direttamente la struttura COBOL invece di essere idiomatico:
+Grafo Neo4j: per query programmatiche ('quali programmi sarebbero impattati se modifico questo copybook?')
+Diagrammi Mermaid: per visualizzazione nel portal, generati automaticamente
 
-Sostituire PERFORM con loop strutturati (for, while, do-while) o method calls
-Eliminare GOTO ristrutturando la logica con if-else, switch-case, o metodi ben definiti
-Applicare modern Java best practices con features Quarkus (dependency injection, reactive patterns)
+Agent 3: JavaConverterAgent — Il Transformation Engine
+È l'agente che effettua la conversione vera e propria. Riceve il contesto completo — analysis data + dependency map — e genera codice Java Quarkus production-ready.
+Il punto critico è evitare quello che viene chiamato 'JOBOL' — codice Java che replica meccanicamente la struttura COBOL invece di essere idiomatico. Le guidelines specifiche includono:
 
-Include retry logic con exponential backoff per gestire content filtering e timeouts di Azure OpenAI — essenziale per robustezza enterprise.
-Hybrid Database Architecture (non mostrata nel diagramma):
-CAMF usa un'architettura dual-database:
+PERFORM non diventa un metodo chiamato performParagraphX(), ma viene ristrutturato in loop idiomatici: for, while, do-while
+GOTO — l'anti-pattern per eccellenza — viene eliminato e la logica ristrutturata con if-else, switch-case, o metodi ben definiti
+Si applicano pattern moderni Quarkus: dependency injection, reactive patterns, annotazioni standard
 
-SQLite (Data/migration.db): metadata strutturati, contenuto file, analisi AI, codice generato
-Neo4j (bolt://localhost:7687): grafi delle dipendenze, relazioni, visualizzazioni
+L'agente include anche retry logic con exponential backoff per gestire i casi in cui Azure OpenAI ritorna errori di content filtering o timeout — in ambiente enterprise un singolo file può richiedere multiple chiamate API e deve essere robusto."
 
-Questa separazione ottimizza le query: SQLite risponde a "cosa c'è in questo file?", Neo4j risponde a "cosa dipende da questo file?" — due pattern di accesso fondamentalmente diversi."
 
-[SLIDE 3 - Pipeline: Fase 1 e 2]
-"La pipeline di CAMF è strutturata in tre fasi distinte. Le prime due — Preparation e Enrichment — sono spesso sottovalutate ma sono critiche per la qualità dell'output.
-FASE 1: PREPARATION
-L'obiettivo è preparare il codice COBOL per essere compreso dall'AI. Il team Microsoft ha scoperto empiricamente che la qualità del contesto in input è il fattore determinante per la qualità dell'output.
-Reverse Engineering:
-Non è solo parsing sintattico. Implica estrarre la business logic implicita da:
 
-Il codice stesso (strutture, naming conventions)
-Commenti esistenti (quando informativi)
-Documentazione tecnica legacy
-User handbooks e manuali operativi
-SME umani — Subject Matter Experts che conoscono il sistema
+**[SLIDE 4 - Pipeline: Fase 1  2 3]**
 
-Questo produce un glossary (Data/glossary.json) che mappa termini tecnici COBOL a concetti business, usato poi per arricchire il contesto degli agenti.
-Code Cleaning:
-Rimuovere informazioni che non aggiungono valore al contesto AI. Esempio tipico: i change logs negli header dei file COBOL — righe come:
-cobol* 2003-05-12 JKS MODIFIED FOR Y2K COMPLIANCE
-* 2005-08-23 MLR ADDED NEW FIELD WS-AMOUNT-2
-```
-Questi consumano token senza fornire informazione utile per la traduzione. Il cleaning libera context window per contenuto semanticamente rilevante.
-
-**Translation:**
-Nel caso Bankdata, il codice era in **danese** — una lingua di nicchia non presente in tutti i training set dei modelli. Tradurre commenti e nomi variabili in inglese migliora significativamente la comprensione del modello.
-
-**FASE 2: ENRICHMENT**
-
-L'obiettivo è arricchire il codice con contesto semantico che aiuti l'AI.
-
-**Add Meaningful Comments:**
-A volte l'opposto del cleaning è necessario. Commenti ben scritti — specialmente se **generati dall'AI stessa** in una fase precedente — aiutano a mantenere coerenza nelle fasi successive.
-
-**Markdown ben-strutturato:**
-Il team ha scoperto che contenuto in formato **markdown strutturato** — headers, bullet points, code blocks — è significativamente più efficace come contesto rispetto a testo non formattato. Questo è coerente con come i modelli sono stati trainati su documentazione tecnica.
-
-**Identify Deterministic Structures:**
-Pattern ricorrenti nel codice COBOL — come strutture di validazione input, gestione errori, logging — possono essere identificati e trattati in modo template-based invece che generativo, riducendo variabilità e errori.
-
-**Document Temporary Results:**
-Salvare le analisi intermedie permette di costruire contesto incrementalmente. Se l'Agent 1 produce un'analisi di alta qualità, questa viene persistita e riusata invece di essere rigenerata."
-
----
-
-### **[SLIDE 4 - Pipeline: Fase 3 - Automation Aids]**
-
-"La Fase 3 fornisce **artefatti e analisi** che supportano la migrazione umana oltre alla conversione automatica.
-
-**Flow Analysis & Visualization:**
-
-I **diagrammi Mermaid** generati automaticamente visualizzano:
-- Call trees tra programmi
-- Dipendenze copybook
-- Circular dependencies (potenziali problemi architetturali)
-- Critical files (nodi con alto in-degree o out-degree)
-
-Questi non sono solo 'nice to have' — sono strumenti per gli **architetti umani** che devono validare e pianificare la migrazione.
-
-Il DependencyMapperAgent usa due prompt specializzati:
-
-*Prompt 1 - Mermaid Generation:*
-```
-Create a clear, well-organized Mermaid flowchart that shows COBOL program dependencies.
-Use 'graph TB' or 'graph LR' based on complexity.
-Group related items using subgraphs.
-Use different colors for programs (.cbl) vs copybooks (.cpy).
-```
-
-*Prompt 2 - Architectural Analysis:*
-```
-Analyze the COBOL code structure and identify:
-1. Data flow dependencies between copybooks
-2. Potential circular dependencies
-3. Modularity recommendations
-4. Legacy patterns that affect dependencies
-Test Generation:
-Se esistono test file legacy, CAMF può costruire su di essi o sperimentare con un approccio TDD (Test-Driven Development) dove i test vengono generati prima della conversione e usati per validare l'output.
-Questo è critico: senza strutture deterministiche di controllo (test), è impossibile validare la correttezza delle traduzioni.
-Isolate Utility Functions:
-Molto codice COBOL include logica che oggi gestiremmo via librerie standard: formatting di date, conversioni numeriche, string manipulation. Isolare e rimuovere questo codice early nella pipeline:
-
-Riduce il volume di codice da tradurre
-Riduce il consumo di token
-Permette di usare librerie Java moderne invece di tradurre pattern obsoleti
-
-Metriche reali dal caso Bankdata:
-MetricaValoreFile COBOL processati102File Java generati99Success rate97%Chiamate API Azure OpenAI205Tempo totale~1.2 oreCosto totale$0.31
-Questi numeri sono ordini di grandezza inferiori ai costi dei Global System Integrators tradizionali."
+La pipeline di CAMF si articola in tre fasi. È importante capire che queste fasi non sono solo tecniche — rappresentano una metodologia sviluppata dal team Microsoft-Bankdata basata su esperienza reale con 70 milioni di righe di COBOL.
+Fase 1: PREPARATION — Preparare il codice per l'AI
+Prima di dare codice COBOL a un LLM, bisogna prepararlo. Il codice legacy enterprise non è mai 'pulito':
+Reverse Engineering: Estrarre la business logic non solo dal codice, ma da tutte le fonti disponibili — commenti, documentazione tecnica, user handbooks, e soprattutto SME umani (Subject Matter Experts). Spesso la vera logica di business non è documentata nel codice ma nella testa di chi ci lavora da 30 anni.
+Code Cleaning: Rimuovere le informazioni che non aggiungono valore e che consumano context window inutilmente. Esempio tipico: gli header con change log — ogni modifica degli ultimi 40 anni tracciata in cima al file. Sono 200 righe di noise che confondono l'AI senza aggiungere valore semantico.
+Translation: Nel caso di Bankdata, il codice ha commenti in danese. Gli LLM sono molto più performanti in inglese, quindi tradurre commenti e documentazione prima della conversione migliora significativamente la qualità dell'output.
+Fase 2: ENRICHMENT — Arricchire con contesto semantico
+Una volta pulito, il codice va arricchito per aiutare l'AI a capirlo meglio:
+Add Meaningful Comments: Paradossalmente, aggiungere commenti prima di usare l'AI migliora i risultati. Commenti ben strutturati in markdown — specialmente se generati da AI in un primo pass — forniscono contesto che l'AI può sfruttare nel pass successivo. È un pattern di bootstrap: AI che aiuta AI.
+Identify Deterministic Structures: Cercare pattern ricorrenti nel codice. Se 50 programmi hanno tutti la stessa struttura di error handling, documentare quel pattern permette all'AI di applicare una trasformazione consistente invece di reinventare la ruota ogni volta.
+Document Temporary Results: Salvare le analisi intermedie. Se il COBOLAnalyzerAgent produce un'analisi particolarmente buona, salvarla e riusarla invece di rigenerarla. Questo costruisce contesto incrementale.
+Fase 3: AUTOMATION AIDS — Supportare con artefatti
+L'ultima fase genera artefatti che supportano sia l'AI che gli sviluppatori umani:
+Flow Analysis & Visualization: Generazione automatica di diagrammi Mermaid e flowcharts. Questi visualizzano dipendenze e control flow in modo che gli sviluppatori possano verificare che l'AI abbia capito correttamente la struttura del sistema.
+Test Generation: Generazione automatica di test cases. Idealmente in approccio TDD — generare i test prima della conversione, così da poter validare che il codice Java prodotto si comporti come l'originale COBOL. Senza test, non c'è garanzia di correttezza.
+Isolate Utility Functions: Identificare funzioni che sono utility generiche — formattazione date, calcoli matematici, validazioni comuni. Queste non vanno tradotte 1:1 ma sostituite con librerie Java moderne equivalenti. Riduce il volume di codice da tradurre e migliora la qualità del risultato."
 
 [SLIDE 5 - Portal COBOL Migration Insights]
 "Quello che vedete è il portal web di CAMF, accessibile su localhost:5028. È un'interfaccia a tre pannelli:
@@ -589,124 +596,98 @@ Esistono test suite per i nostri sistemi COBOL?"
 
 
 
+
 ### 6.2 Reforge-AI
 
-
 [SLIDE 1 - REFORGE-AI - Introduzione]
-"REFORGE-AI è un progetto sviluppato da Gian Paolo Santopaolo, pubblicato a maggio 2025, che dimostra un approccio agentico alla modernizzazione di codice legacy su larga scala.
-Chiarimento importante per il nostro contesto:
-REFORGE-AI è specifico per la migrazione Java Legacy → Spring Boot, non per COBOL. Tuttavia, lo includiamo in questa analisi perché il pattern architetturale — documentation-first con multi-agent orchestration — è direttamente applicabile anche alla modernizzazione COBOL. È un template metodologico più che un tool specifico.
-I punti chiave:
+REFORGE-AI è un sistema agentico sviluppato da Gian Paolo Santopaolo nel 2025, progettato per modernizzare codebase Java legacy verso framework moderni come Spring Boot.
+I tre punti chiave:
 Sistema agente AI basato su GPT-4:
-Non usa un singolo prompt monolitico, ma un'architettura multi-crew costruita su CrewAI, un framework per orchestrazione di agenti AI. CrewAI permette di definire 'crew' di agenti specializzati che collaborano su task complessi.
-Documentation-first approach:
-L'insight fondamentale è generare documentazione autoritativa PRIMA di toccare il codice. Questo inverte l'approccio tradizionale dove la documentazione è un afterthought. La documentazione diventa il blueprint — letteralmente il prompt contestuale — per la fase di code generation.
-Perché Spring Boot?
-Il proof of concept usa il classico sample JBoss Kitchensink — un'applicazione Java EE di riferimento — ma l'obiettivo reale è la modernizzazione di sistemi bancari enterprise. Le banche tipicamente affrontano:
+Non è un singolo prompt monolitico, ma un'architettura multi-agente dove diversi 'agenti' — ciascuno con un ruolo specifico — collaborano per completare task complessi. Importante chiarire: tutti gli agenti usano lo stesso modello GPT-4 sottostante, ma con prompt e persona diversi per ogni task.
+Genera documentazione completa e piano di trasformazione:
+Questo è l'approccio documentation-first — l'insight fondamentale è generare documentazione autoritativa prima di toccare il codice. La documentazione diventa poi il blueprint — letteralmente il prompt context — per la fase di code generation.
+Specifico su Java Legacy → Spring Boot:
+Il proof of concept usa il classico sample JBoss Kitchensink — un'applicazione Java EE di riferimento — ma l'obiettivo reale è la modernizzazione di sistemi bancari enterprise. È lo stesso contesto di CAMF, ma focalizzato su Java invece che COBOL.
+Nota per il nostro contesto:
+REFORGE-AI non è direttamente applicabile a COBOL, ma il pattern architetturale — documentation-first con multi-agent orchestration — è trasferibile. È un template metodologico."
 
-Code ownership silos: sviluppatori veterani con tribal knowledge che resistono al cambiamento
-Documentazione sparsa o obsoleta: nuovi team costretti a reverse-engineering
-Compliance bar elevata: traceability e security reviews obbligatorie
+[SLIDE 2 - Architettura ed Orchestrator]
+"Vediamo l'infrastruttura che coordina il sistema.
+CrewAI Framework:
+REFORGE-AI è costruito su CrewAI — un framework Python per orchestrazione di agenti AI. A differenza di Semantic Kernel usato in CAMF, CrewAI è più leggero e orientato alla prototipazione rapida.
+Il principio è semplice: ogni agente riceve l'output dell'agente precedente e produce un output che alimenta il successivo. È una pipeline sequenziale dove il lavoro viene passato da un agente all'altro.
+Due Crew principali:
+Il sistema è diviso in due pipeline separate:
 
-Questi sono esattamente i problemi che affrontiamo anche nella modernizzazione COBOL."
+Documentation Crew — eseguita da gen_docs.py — analizza il codebase e produce documentazione + piano di migrazione
+Gen Code Crew — eseguita da gen_modern.py — esegue le trasformazioni effettive seguendo il piano
 
-[SLIDE 2 - Fase 1 Documentation e Fase 2 Code Generation]
-"L'architettura di REFORGE-AI si articola in due fasi distinte ma interconnesse.
-FASE 1: DOCUMENTATION
-La 'Documentation Crew' — un team di agenti AI — scansiona il codebase e il Javadoc esistente per inferire:
+Feedback Loop Umano:
+Questo è un punto critico che distingue REFORGE-AI da approcci fully-automated. Tra la Fase 1 e la Fase 2, un reviewer umano valida il piano di migrazione. Può modificarlo, aggiungere o rimuovere step, correggere errori di analisi.
+Perché è importante? Perché se il piano è sbagliato, tutto il codice generato sarà sbagliato. Il checkpoint umano è una guardrail contro le hallucinations del modello."
 
-Module boundaries e responsabilità
-Data flows tra componenti
-Integration points con sistemi esterni
+[SLIDE 3 - Fase 1 Documentation Crew]
+"La prima fase è gestita dalla Documentation Crew — un gruppo di agenti che scansiona il codebase legacy.
+Processo:
+Il workflow inizia con la scansione automatica del codice — nel caso del proof of concept, l'applicazione JBoss Kitchensink. Gli agenti analizzano:
 
-Output specifici:
+La struttura del progetto
+I pattern architetturali presenti (EJB, JPA, CDI)
+Le dipendenze tra componenti
 
-Sequence e component diagrams in sintassi Mermaid
-Dependency graphs delle librerie third-party
-Service catalogs con endpoint signatures
+Poi eseguono un'analisi architetturale per capire come i moduli interagiscono tra loro, quali sono i punti di integrazione, dove sono le dipendenze critiche.
+Viene quindi eseguita la generazione di diagrammi Mermaid — sequence diagrams, component diagrams — che visualizzano l'architettura in modo comprensibile. Mermaid è strategico perché i diagrammi si integrano direttamente in Markdown, quindi restano close to the code.
+Infine, c'è il feedback umano — il reviewer valida l'analisi prima di procedere.
+Output:
+ArtefattoDescrizioneArchitecture DocumentationDiagrammi Mermaid, overview architetturaleModule AnalysisAnalisi per-modulo con responsabilitàDependency graphsMappa delle dipendenze tra componentiplan.yamlPiano strutturato con tutti gli step di migrazione
+Il plan.yaml è l'output più importante: è il contratto tra Fase 1 e Fase 2, il documento che dice esattamente cosa deve essere trasformato e come."
 
-Perché Mermaid? È una sintassi semplice ma potente per diagrammi che si integra direttamente in Markdown. I team possono impararla in un giorno e i diagrammi restano close to the code — aggiornabili insieme al codice stesso.
-Human-in-the-Loop Refinement:
-Questo è un punto critico che distingue REFORGE-AI da approcci fully-automated. Invece di fidarsi di un singolo pass LLM, implementa un improvement loop:
+[SLIDE 4 - Fase 2 Gen Code Crew]
+"Con il piano validato, la Gen Code Crew esegue le trasformazioni effettive. Tre agenti specializzati lavorano in sequenza.
+Code Generation Agent:
+È l'agente che gestisce la conversione dei pattern architetturali:
 
-Gli ingegneri reviewano i docs auto-generati
-Il feedback viene incorporato nei prompt degli agenti
-Gli agenti ri-renderizzano diagrammi e testo aggiornati
+EJB → Spring Components: trasforma Enterprise JavaBeans in annotazioni Spring — @Service, @Repository, @Controller
+Java EE patterns → Spring Boot idioms: rimpiazza pattern legacy con equivalenti moderni — dependency injection, configuration classes, REST controllers
 
-Questo approccio ibrido è essenziale perché mitiga le hallucinations e garantisce allineamento con i requisiti di security e compliance. Alla fine della Fase 1, i team hanno un battle-tested migration plan con visualizzazioni Mermaid e step di upgrade precisi.
-FASE 2: CODE GENERATION
-La 'Gen Code Crew' configura agenti dedicati per task specifici:
-Code Conversion Agent:
-
-Trasforma EJB → Spring components (@Service, @Repository)
-Converte Java EE patterns → Spring Boot idioms
-Genera DTOs e mapping logic automaticamente
-
+Usa la documentazione generata in Fase 1 come prompt context — questo è il cuore dell'approccio documentation-first. Il modello 'sa' cosa deve fare perché ha letto la documentazione.
 Dependency Update Agent:
+Gestisce l'aggiornamento tecnologico:
 
-Migra Java 8 → Java 21 (o Java 17 nel paper originale)
-Aggiorna dependencies: Java EE → Spring Boot 3
-Gestisce configurazioni plugin Maven
+Java 8 → Java 21: migrazione della versione del linguaggio, adattamento di API deprecate
+Java EE patterns → Spring Boot 3: aggiornamento delle dipendenze nel pom.xml, risoluzione di conflitti
+Genera Unit Tests con JUnit 5: crea test automatici per validare che le trasformazioni siano corrette
 
-Test Scaffolding (implicito nel tuo Compliance Check Agent):
-
-Genera JUnit 5 unit tests
-Crea integration tests per i nuovi endpoints
-
+La generazione di test è cruciale: senza test, non c'è modo di verificare che il codice migrato si comporti come l'originale.
 Compliance Check Agent:
+È l'agente di quality assurance:
 
-Verifica security annotations (@Secured, @PreAuthorize)
-Applica style guides aziendali
-Valida contro checklist compliance
+Verifica Security Annotations: controlla che @Secured, @PreAuthorize siano applicati correttamente
+Applica Style Guides: garantisce che il codice segua le convenzioni aziendali
+OWASP best practices: incorpora pattern di secure coding per prevenire vulnerabilità comuni
 
-Multi-Agent Choreography:
-Questa separazione in agenti specializzati riflette un trend più ampio: gli AI agents come team members, non semplici autocomplete tools. Ogni agente ha una persona distinta ottimizzata per il suo task, e la documentazione generata in Fase 1 fornisce il contesto condiviso che permette agli agenti di lavorare coerentemente.
-Gli agenti processano un modulo alla volta, producendo:
+Questa separazione in agenti specializzati riflette il principio che task diversi richiedono competenze diverse — anche se sotto il cofano è sempre lo stesso modello GPT-4 con prompt differenti."
 
-Clean Spring Boot services con annotazioni corrette
-Build scripts aggiornati con plugin configurations moderne
-DTOs auto-generati con mapping logic
-
-Il codice 'just compiles' nella maggior parte dei casi, grazie allo scaffolding documentale e ai project skeletons forniti agli agenti."
-
-[SLIDE 3 - Use Case e Limitazioni]
-"Il use case presentato è Banking Legacy Java Migration — esattamente il contesto enterprise dove questi approcci hanno più valore.
-Output generati:
-ArtefattoDescrizioneArchitecture DocumentationDiagrammi Mermaid, module analysisMigration PlansStep-by-step upgrade pathModule AnalysisDependency graphs, integration pointsModernized CodeSpring Boot services, DTOs, configsTestsJUnit 5 unit e integration testsReportsCompliance checks, coverage reportsFeedback & SuggestionsRecommendations per improvement
-Best Practices identificate:
-
-Phased Incrementalism: Spezzare le migrazioni in slice logici (es. account services, transaction services). Questo riduce il rischio e si allinea con le strategie di de-risking bancarie.
-Mermaid-First Documentation: Embedding diagrammi direttamente in Markdown garantisce che i docs restino vicini al codice e siano facili da aggiornare.
-Agentic Orchestration: Usare agenti multipli specializzati invece di un prompt monolitico.
-Human-in-the-Loop Guardrails: Review regolari catturano hallucinations e garantiscono allineamento con security e compliance.
-
-LIMITAZIONI — Onestamente dichiarate:
-1. Costi elevati (API GPT-4):
-Questo è un fattore reale. GPT-4 API costs possono scalare rapidamente su codebase enterprise. Per un sistema con migliaia di file, i costi possono diventare significativi. Tuttavia, vanno comparati con i costi alternativi: mesi-uomo di sviluppatori senior.
-2. Specializzato in Java Legacy:
-REFORGE-AI è purpose-built per Java EE → Spring Boot. Non è generalizzabile out-of-the-box a COBOL o altri linguaggi. Per COBOL, servono tool come CAMF o XMainframe.
-3. Built Agent Hallucinations:
-Le hallucinations LLM sono un problema reale, specialmente in due aree identificate:
-UI Generation:
-Gli LLM eccellono nel backend refactoring ma falter su layout frontend intricati e CSS frameworks. Per progetti grandi, gli UI developers rimangono indispensabili per interfacce pixel-perfect.
-pom.xml & Dependency Graphs:
-Gli LLM general-purpose spesso mishandle le transitive dependencies Maven e le plugin versions, causando broken builds. Pipeline specializzate o tooling compiler-aware devono complementare gli LLM per stabilizzare i dependency trees.
-Queste limitazioni evidenziano che, anche con AI agentica avanzata, l'expertise umana in UI/UX e build engineering rimane critica — è una partnership sinergistica human-AI, non una sostituzione."
-
-[CLOSING - Rilevanza per il nostro contesto COBOL]
-"Perché includiamo REFORGE-AI in una presentazione sulla migrazione COBOL?
-Non perché sia applicabile direttamente — non lo è. Ma perché dimostra pattern architetturali che sono trasferibili:
-
-Documentation-first approach: Generare documentazione autoritativa prima di toccare il codice funziona anche per COBOL. CAMF fa esattamente questo con la sua Fase 1 di Preparation.
-Multi-agent specialization: Separare analysis, dependency mapping, e code conversion in agenti dedicati è un pattern che vediamo anche in CAMF (COBOLAnalyzerAgent, DependencyMapperAgent, JavaConverterAgent).
-Human-in-the-loop refinement: Nessun sistema AI può operare fully-automated su migrazioni enterprise. Il feedback loop umano è essenziale.
-Phased incrementalism: Processare un modulo alla volta, validare, procedere — funziona indipendentemente dal linguaggio source.
-
-Confronto rapido:
-AspettoREFORGE-AICAMFSource LanguageJava EECOBOLTargetSpring BootJava Quarkus / C# .NETFrameworkCrewAISemantic KernelLLMGPT-4Azure OpenAI (GPT-4.1/5)Documentation-first✅ Sì✅ SìMulti-agent✅ Sì✅ SìHuman-in-the-loop✅ Esplicito✅ ImplicitoOpen SourceSample project✅ GitHub
+[SLIDE 5 - Punti di forza e Limitazioni]
+"Chiudiamo con una valutazione onesta di REFORGE-AI.
+Punti di forza:
+Non è richiesto training:
+Come CAMF, REFORGE-AI usa prompt engineering su modelli general-purpose. Non servono dataset COBOL-Java, non serve fine-tuning. Si può iniziare subito e si può aggiornare immediatamente quando escono modelli migliori.
+Human-in-the-loop validation:
+Il checkpoint umano tra le due fasi riduce il rischio di errori catastrofici. Le decisioni critiche sono validate da esperti di dominio prima di essere applicate.
+Testato su codice reale:
+Non è un toy project su codice sintetico. È stato testato su JBoss Kitchensink, un'applicazione Java EE reale con tutte le complessità che questo comporta.
+Limitazioni — Onestamente dichiarate dall'autore stesso:
+Costi elevati (API GPT-4):
+GPT-4 è costoso. Per codebase enterprise con migliaia di file, i costi API possono scalare rapidamente. Confrontate con CAMF che dichiara $0.31 per 102 file — REFORGE-AI non fornisce benchmark di costo, ma essendo basato su GPT-4 sarà comparabile o superiore.
+Specializzato Java Legacy:
+Non è generalizzabile out-of-the-box. Per COBOL serve un sistema come CAMF. Il pattern architetturale è trasferibile, ma il codice no.
+Build Agent Hallucinations:
+L'autore stesso documenta che i log di build simulati possono essere inaccurati. Quando un agente deve 'fingere' output deterministici come log di compilazione, gli LLM tendono a inventare — è un problema noto.
+Inconsistent Model Outputs:
+Eseguire gen_docs.py più volte può produrre risultati diversi. Questo è aggravato dal fatto che tutti gli agenti usano lo stesso modello GPT-4 — non c'è diversificazione. Se il modello ha un 'bad day' o degrada sotto uso intensivo, tutti gli agenti ne risentono contemporaneamente. È un single point of failure architetturale.
 Takeaway:
-REFORGE-AI è un reference implementation di come strutturare un sistema di modernizzazione AI-driven. I principi — documentation-first, multi-agent, human-in-the-loop — sono language-agnostic e applicabili anche al nostro contesto COBOL.
-
+REFORGE-AI è un proof of concept che dimostra il pattern documentation-first con multi-agent orchestration. Non è production-ready come CAMF, ma i principi sono solidi e applicabili anche al nostro contesto COBOL."
 ---
 
 ## 7. VALIDAZIONE E TESTING AUTOMATICO (4 min)
