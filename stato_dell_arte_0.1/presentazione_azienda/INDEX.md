@@ -231,35 +231,142 @@ Il valore principale per il nostro contesto è dimostrare che un approccio data-
 ### 5.1 Traduzioni Transitive: InterTrans
 **Contenuto della slide:**
 
- InterTrans fa traduzione automatica diretta - prende codice in un linguaggio e lo converte in un altro.L'idea chiave è l'uso di linguaggi intermedi. Invece di tradurre direttamente da linguaggio A a linguaggio B - che è difficile per gli LLM - InterTrans traduce passando attraverso uno o più linguaggi intermedi che fungono da 'ponte'.Per esempio, per tradurre da Python a Java, potrebbe passare attraverso C++: Python → C++ → Java. Questo approccio contro-intuitivo si rivela più accurato della traduzione diretta
+
+[SLIDE 1 - Introduzione]
+
+INTERTRANS è un approccio di code translation basato su LLM che sfrutta traduzioni intermedie transitive per migliorare l'accuratezza della traduzione automatica di codice. È stato presentato come conference paper nel 2025 da Macedo et al. (Queen's University, Huawei Canada, University of Waterloo).L'intuizione chiave deriva dalla machine translation per linguaggi naturali: tradurre tra certe coppie di lingue è più facile che tra altre. Per migliorare traduzioni difficili, una strategia comune è usare una pivot language — ad esempio, la traduzione statistica tra francese e tedesco spesso passa attraverso l'inglese come ponte.Perché questo è rilevante per il code translation? Studi recenti mostrano che anche i LLM soffrono di questo problema. Pan et al. (2024) hanno dimostrato che l'80% degli errori nella traduzione C++→Go sono dovuti a differenze sintattiche e semantiche, mentre solo il 23.1% degli errori si verifica traducendo C++→C. Questo suggerisce che certi linguaggi sono naturalmente più vicini tra loro.INTERTRANS sfrutta questa osservazione: invece di tradurre direttamente Python→Java, potrebbe essere più efficace tradurre Python→Rust→Java, usando Rust come bridge language che condivide caratteristiche con entrambi.A differenza di TransCoder-IR, che usa una rappresentazione intermedia a livello di compilatore (LLVM IR), INTERTRANS usa linguaggi di programmazione esistenti come intermediari, sfruttando le capability multilingue dei code LLM già pre-trainati su decine di linguaggi."
+
+
+[SLIDE 2 - Tree of Code Translation]
+
+"L'architettura di INTERTRANS si articola in due stage.
+Stage 1: Tree of Code Translations (ToCT)
+ToCT è un algoritmo di planning che genera tutti i possibili path di traduzione da un linguaggio sorgente Ls a un linguaggio target Lt, dato un set di linguaggi intermedi L e un parametro maxDepth che limita la profondità dell'albero.
+L'algoritmo funziona così:
+
+Inizializza una coda Q con il linguaggio sorgente
+Per ogni nodo, espande verso tutti i linguaggi intermedi L ∪ {Lt}, escludendo il linguaggio corrente (non puoi tradurre Python→Python)
+Se raggiungi Lt, aggiungi il path alla lista finale
+Continua fino a raggiungere maxDepth
+
+Nota importante: il set L include il linguaggio sorgente Ls ma esclude il target Lt. Questo perché Lt deve essere sempre l'endpoint finale, mentre Ls può apparire come step intermedio (per casi dove tradurre "avanti e indietro" può semplificare il codice).
+Nell'esempio della slide, per tradurre Python→Java con maxDepth=3 e L={Python, Rust, JavaScript, C++, Go}, ToCT genera path come:
+
+[Python, Java] — traduzione diretta
+[Python, Rust, Java]
+[Python, C++, Java]
+[Python, Rust, JavaScript, Java]
+E così via...
+
+Stage 2: Sequential Verification con Early Stopping
+I path generati vengono ordinati per lunghezza crescente (shortest-first) e verificati in ordine breadth-first. Per ogni path:
+
+Si esegue la catena di traduzioni usando l'LLM
+Se il risultato finale in Lt passa la test suite → STOP, ritorna la traduzione
+Altrimenti, continua con il path successivo
+
+Due ottimizzazioni critiche:
+
+Memoization: se due path condividono un prefisso (es. [Python, Rust, Java] e [Python, Rust, JavaScript, Java] condividono l'edge Python→Rust), il risultato intermedio viene cachato e riutilizzato
+Early stopping: appena un path produce una traduzione corretta, l'algoritmo termina
+
+Questo è fondamentale perché, dai dati sperimentali, il 75% delle traduzioni riuscite richiede al massimo 2 tentativi, e la media è di soli 3.9 tentativi — molto meno del worst-case teorico di 85 tentativi con maxDepth=4."
 
 
 
-"Il funzionamento di InterTrans si basa su tre step fondamentali.
-Step 1: Tree of Code Translation (ToCT). L'algoritmo costruisce un albero di tutti i possibili percorsi di traduzione tra il linguaggio sorgente e quello target. Guardate il diagramma: se vogliamo tradurre da Python a Java, possiamo andare diretti oppure passare attraverso Rust, JS, C++, o Go. L'albero esplora sistematicamente tutte queste possibilità.
-Step 2: Exploration. Per ogni percorso nell'albero, un LLM genera la traduzione. Nota importante: InterTrans usa LLM pre-trained as-is - non serve training aggiuntivo. Funziona con Code Llama, Magicoder, StarCoder2, o qualsiasi altro code LLM.
-Step 3: Validation con test suite. Questo è il punto cruciale. L'algoritmo esplora i percorsi fino a trovare una traduzione che passa tutti i test. Appena trova una traduzione corretta, si ferma. Questo è un approccio test-driven: la correttezza è verificata automaticamente.
-Il percorso evidenziato in verde nel diagramma mostra un esempio di successo: Python → Rust → Java è stato il percorso vincente per quel particolare problema."
+[SLIDE 3 - Use Case]
 
-Vediamo gli use case concreti dove InterTrans si è dimostrato efficace.
-Il primo esempio è Python → C++ → Java. Tradurre direttamente da Python a Java è difficile per gli LLM perché i paradigmi sono molto diversi. Ma passando attraverso C++ - che ha tipizzazione statica come Java ma sintassi più vicina a Python - il processo diventa più accurato.
-Il secondo caso è C++ → Rust → Java. Rust funziona bene come linguaggio intermedio perché condivide con C++ la gestione della memoria low-level, ma ha costrutti più moderni simili a Java.
-Il terzo esempio è particolarmente rilevante per noi: COBOL → C → C++ → Java. Questo è un percorso multi-step che passa attraverso due linguaggi intermedi. COBOL è tradotto prima in C (entrambi procedurali), poi C in C++ (aggiunge OOP), infine C++ in Java.
-Guardiamo ora i risultati del benchmark. La tabella confronta tre LLM popolari in modalità direct translation versus con InterTrans.
-Code Llama: accuracy passa da 50-60% a 70-80% - un miglioramento del 20-30%.
-Magicoder: è il vincitore assoluto. Direct translation ottiene già 60-70%, ma con InterTrans sale a 87.3-95.4%. Questo è quasi perfetto - significa che 9 traduzioni su 10 passano tutti i test.
-StarCoder2: da 55-65% a 75-85%, +20-30% di miglioramento.
-Il messaggio chiave è che InterTrans migliora qualsiasi LLM senza bisogno di training aggiuntivo. È una tecnica plug-and-play che funziona con modelli off-the-shelf."
+"Vediamo perché i path intermedi funzionano meglio con un esempio concreto dal paper.
+Caso: Python→Java via Rust
+Nel codice Python sorgente, l'espressione if int(number_as_string[0]) in odd_digits verifica se una cifra appartiene a una tupla di interi dispari.
+La traduzione diretta Python→Java tenta di usare Arrays.asList(odd_digits).contains(). Ma c'è un problema: Arrays.asList() in Java accetta solo reference types, non primitive types. Passando un int[], si ottiene un List<int[]> (una lista contenente un singolo array), non un List<Integer>. Il codice compila ma fallisce semanticamente.
+La traduzione via Rust risolve questo problema. Rust usa esplicitamente un HashSet<i32> per odd_digits. Quando questo viene tradotto a Java, l'LLM genera correttamente un Set<Integer> con Arrays.asList(1, 3, 5, 7, 9) — e il metodo contains() funziona correttamente.
+Perché funziona? Rust ha un type system più esplicito e rigido di Python. Forzando l'LLM a "pensare" in termini di tipi Rust, emerge una rappresentazione intermedia più precisa che si mappa meglio su Java.
+Altri pattern identificati nel paper:
+
+C++→Java via Rust: la traduzione diretta tende a copiare sintassi C++ (es. vector[i]) che non è valida in Java. Passando per Rust, la sintassi distinta forza l'LLM a riconoscere le differenze.
+Rust→Go via C++: entrambi i linguaggi supportano type inference, causando ambiguità sui tipi delle variabili locali. C++ con annotazioni di tipo esplicite (int w = ...) fornisce informazione che permette una traduzione corretta a Go.
+
+L'esempio COBOL→C→C++→Java che avete nella slide è interessante per il nostro contesto: COBOL ha semantiche molto distanti da Java, ma C è storicamente più vicino a COBOL (entrambi procedurali, gestione memoria esplicita), e C++ fornisce il ponte verso l'OOP di Java."
+
+[SLIDE 4 - Benchmark — CORREZIONE DEI DATI]
+ Ecco i dati corretti dal paper, usando la metrica Computational Accuracy (CA) — la percentuale di traduzioni che producono output funzionalmente equivalenti al codice sorgente.
+Confronto INTERTRANS vs Direct Translation (CA@10)
+DatasetLLMDirect CA@10INTERTRANSImprovementCodeNetCode Llama34.6%60.8%+26.2% assolutoCodeNetMagicoder49.0%87.3%+38.3% assolutoCodeNetStarCoder241.0%84.4%+43.3% assolutoHumanEval-XMagicoder66.9%95.4%+28.6% assolutoTransCoderStarCoder273.2%93.8%+20.6% assoluto
+Il best-performing è INTERTRANS con Magicoder, che raggiunge 87.3%-95.4% CA sui tre benchmark.
+Confronto con SOTA sul dataset TransCoder:
+ApproccioCA MediaTransCoder (unsupervised)36.2%TransCoder-IR (con LLVM IR)45.8%TransCoder-ST (con test automatici)52.2%GPT-3.586.0%UniTrans + GPT-3.587.9%INTERTRANS + StarCoder293.8%
+INTERTRANS supera tutti gli approcci esistenti, incluso UniTrans con GPT-3.5 che usa test case generation e program repair — funzionalità che INTERTRANS non richiede.
+Risultati dell'Ablation Study:
+Effetto di maxDepth:
+
+Da depth 1 (direct) a 2: +23.7% CA (Code Llama su HumanEval-X)
+Da depth 2 a 3: +6.6%
+Da depth 3 a 4: +3.2%
+
+I benefici maggiori si ottengono con 2-3 step intermedi; oltre depth 4, i miglioramenti diventano marginali e non statisticamente significativi.
+Effetto del numero di linguaggi intermedi:
+
+Da 0 a 1 linguaggio: +9.3% CA
+Da 1 a 2: +12.9%
+Da 2 a 3: +9.2%
+Da 3 a 4: +5.6%
+Da 4 a 5: +3.2%
+
+Come per maxDepth, i benefici maggiori si ottengono con 2-3 linguaggi intermedi.
+Quali linguaggi sono più importanti?
+L'heatmap nel paper mostra che l'impatto varia per coppia:
+
+Per C++→Java, rimuovere Rust causa -17.4% CA (statisticamente significativo)
+Per Python→Java, rimuovere Rust causa -17.4% CA
+Per Rust→Go, rimuovere C++ causa impatto significativo
+
+Non esiste un "best pivot language" universale — dipende dalla coppia sorgente-target."
+
+[CLOSING - Rilevanza per COBOL e Considerazioni Critiche]
+
+"Rilevanza per la migrazione COBOL:
+Il paper menziona esplicitamente il path COBOL→C→C++→Java come esempio. Questo è particolarmente interessante perché:
+
+COBOL e C condividono il paradigma procedurale e la gestione esplicita della memoria
+C e C++ sono sintatticamente vicini
+C++ e Java condividono concetti OOP
+
+INTERTRANS potrebbe essere applicato direttamente a migrazioni COBOL usando LLM multilingue, senza necessità di training specifico.
+Punti di forza:
+
+Nessun training richiesto — usa LLM off-the-shelf
+Improvement significativo (+18-43% CA assoluto)
+Approccio orthogonale a tecniche esistenti (può essere combinato con program repair, test generation)
+Open source: codice disponibile su GitHub
+
+Limitazioni:
+
+Costo computazionale: anche con ottimizzazioni, esplorare l'albero è costoso (multiple inference calls per traduzione)
+Dipendenza dalla test suite: richiede test per validare le traduzioni
+Non spiega perché certi path funzionano: il paper identifica pattern ma non fornisce una teoria predittiva
 
 
 
-### 5.2 Code Reborn
 
 
 
-### 5.3 GPT-MIGRATE
 
-Da rimuovere
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
 
 ---
@@ -267,68 +374,338 @@ Da rimuovere
 
 ### 6.1 Microsoft CAMF - COBOL Agentic Migration Factory 
 
-"Microsoft CAMF - COBOL Agentic Migration Factory - è un framework open-source sviluppato da Microsoft per la modernizzazione di sistemi mainframe COBOL.A differenza di XMainframe che si limita a spiegare il codice, o MigrationExp che suggerisce l'ordine di migrazione, CAMF esegue la traduzione completa end-to-end da COBOL a Java Quarkus, producendo codice production-ready.Il framework è stato sviluppato in collaborazione con Bankdata, un consorzio di 8 banche danesi che gestisce oltre 70 milioni di linee di codice COBOL. Questa partnership è stata fondamentale perché ha fornito accesso a codice COBOL enterprise reale, non solo esempi semplificati da GitHub.CAMF è costruito su Microsoft Semantic Kernel, un framework per orchestrare agenti AI. La tecnologia di base è GPT-4.1, scelto specificamente per le sue capacità di reasoning - la capacità di analizzare logicamente la struttura del codice COBOL, seguire decision paths e comprendere control flow.Il framework è completamente open-source e disponibile su GitHub all'indirizzo Azure-Samples/Legacy-Modernization-Agents. Questo è importante perché permette alle organizzazioni di mantenere il controllo del proprio intellectual property, evitando dipendenza da vendor esterni o Global System Integrators.La data di pubblicazione è luglio 2025, quindi è un tool molto recente - pubblicato tramite blog post su Microsoft DevBlogs. Non è un paper accademico peer-reviewed, ma un progetto enterprise open-source con documentazione tecnica completa.Un aspetto critico da sottolineare: CAMF NON fa training di modelli custom. Usa GPT-4.1 pre-trained in modalità zero-shot, affidandosi completamente a prompt engineering e orchestrazione multi-agente per ottenere risultati di qualità.
 
-"L'architettura di CAMF si basa su un orchestratore centrale chiamato MigrationProcess.cs che coordina tre agenti specializzati. 
-AGENT 1: COBOLAnalyzerAgent è il parsing engine fondamentale. La sua funzione è trasformare codice COBOL non strutturato in dati di analisi strutturati e machine-readable. Tecnicamente, riceve file COBOL raw come input ed esegue un'analisi semantica profonda usando AI per estrarre: la struttura del programma e le data divisions, le definizioni di variabili e le loro gerarchie, il flusso procedurale e la business logic, gli statement SQL/DB2 embedded, e le dipendenze da copybook. L'implementazione usa execution settings ottimizzati: MaxTokens di 32,768 per gestire programmi legacy di grandi dimensioni, Temperature di 0.1 per garantire analisi deterministica, e TopP di 0.5 per output focalizzato. L'output è un oggetto CobolAnalysis strutturato che contiene tutte queste informazioni in formato parsabile.
+[SLIDE 1 - Microsoft CAMF - Introduzione]
+"CAMF — COBOL Agentic Migration Factory — è un framework open-source rilasciato da Microsoft nel luglio 2025, sviluppato in collaborazione con Bankdata, una technology company danese che serve un consorzio di otto banche rappresentanti oltre il 30% del mercato bancario danese.
+Il contesto è significativo: Bankdata gestisce ancora oltre 70 milioni di righe di codice COBOL in produzione, eredità di sistemi che esistono dagli anni '60. Mentre la maggior parte del nuovo sviluppo è orientato verso cloud-native, alcuni workload mainframe non sono più un fit ottimale per quella piattaforma e beneficerebbero di un re-platforming.
+I tre punti chiave che vedete:
+1. Tre agenti AI — Non un singolo LLM monolitico, ma un'architettura multi-agente con specializzazione per task. Ogni agente ha una persona distinta ottimizzata per il suo compito specifico.
+2. Prompt engineering (no training data) — Questo è cruciale: CAMF non richiede fine-tuning o dataset di training COBOL-Java. Usa LLM general-purpose (GPT-4.1, GPT-5 Mini) con prompt engineering sofisticato. Elimina i costi e la complessità di training task-specific, e permette di aggiornare immediatamente quando escono modelli migliori.
+3. Collaborazione con Bankdata — Non è un toy project su codice COBOL sintetico. È stato testato su codice reale di produzione bancario, con tutte le complessità che questo comporta: commenti in danese, pattern legacy, dipendenze intricate.
+Il framework è costruito su Microsoft Semantic Kernel con la Process Function per l'orchestrazione degli agenti. La scelta di Semantic Kernel rispetto ad AutoGen (usato nelle prime iterazioni) è dovuta alla sua maggiore maturità e alle capability di orchestrazione più robuste per scenari enterprise
 
-AGENT 2: DependencyMapperAgent funziona come il 'cervello architetturale' del framework. Analizza le relazioni tra programmi COBOL, costruisce mappe di dipendenze e reverse dependencies, e genera diagrammi Mermaid per visualizzare queste relazioni. Usa un approccio dual-prompt molto intelligente. Il primo prompt genera diagrammi Mermaid flowchart che mostrano visivamente le relazioni tra programs e copybooks, usando subgraphs per raggruppare componenti correlati, colori diversi per programmi versus copybooks, e frecce direzionali per indicare data flow e pattern di inclusione copybook. Il secondo prompt esegue analisi AI-powered che identifica: data flow dependencies tra copybooks, potenziali circular dependencies, raccomandazioni di modularità, e legacy patterns che impattano le dipendenze. Calcola anche metriche quantitative: totale programs, totale copybooks, e media dependencies per program. Questo context architetturale è essenziale perché alimenta sia il COBOLAnalyzerAgent - fornendo usage patterns, data flow, e problematic patterns - sia il JavaConverterAgent - suggerendo dove definire microservice boundaries in Quarkus, come mappare COBOL data structures a Java entities, e quali component devono comunicare nella nuova architettura.
+[SLIDE 2 - Architettura]
+"L'architettura che vedete nel diagramma segue un pattern di pipeline sequenziale con feedback loop. L'Orchestrator — implementato in MigrationProcess.cs — coordina i tre worker agents.
+Agent 1: COBOLAnalyzerAgent
+È il parsing engine fondamentale del sistema. La sua funzione è trasformare codice COBOL non strutturato in structured analysis data consumabile dagli altri agenti.
+Cosa estrae concretamente:
 
-AGENT 3: JavaConverterAgent è il motore di trasformazione core che converte codice COBOL in Java Quarkus production-ready. Il system prompt è critico e specifica: creare proper Java class structures da COBOL programs, convertire COBOL variables in appropriate Java data types, trasformare COBOL procedures in Java methods, e - fondamentale - gestire COBOL-specific features come PERFORM loops e GOTO statements in modo idiomatico Java moderno. Lo Step 4 del prompt è particolarmente importante: sostituire PERFORM statements con loop strutturati for, while, do-while o method calls, eliminare GOTO ristrutturando la logica con if-else, switch-case, loops o metodi chiaramente definiti, assicurando che il codice Java risultante sia readable, maintainable, e segua current best practices invece di replicare direttamente la struttura COBOL - evitando il cosiddetto 'JOBOL', Java che sembra COBOL. Include feature enterprise-grade: retry logic con exponential backoff per gestire timeout e content filter violations, content sanitization che pulisce automaticamente testo internazionale per evitare trigger di Azure OpenAI content filters, e code extraction che parsa intelligentemente Java generato da AI estraendolo da markdown blocks. L'output è un oggetto JavaFile con modern Java Quarkus code, proper annotations, struttura microservice-ready, business logic preservata, e enterprise design patterns applicati.L'orchestrazione funziona in sequenza pulita: primo, scopri file COBOL e copybooks, secondo, analizza file COBOL per struttura e logica via COBOLAnalyzerAgent, terzo, mappa dependencies program-to-copybook e altro via DependencyMapperAgent, quarto, converti programmi COBOL in Java usando analisi e dependency context via JavaConverterAgent salvando ogni classe, e quinto, genera reports e diagrams basati su dependency analysis. Ogni agente ritorna structured outputs che servono come input per il next agent nella pipeline - questo garantisce clean separation of concerns, testabilità, ed estensibilità.L'output finale comprende: Generated Java Code pronto per deployment, e Reports & Diagrams che includono dependency diagrams in formato Mermaid, full chat log di tutte le agent conversations per transparency e debug, conversion metrics con statistiche su programs/copybooks processati, e compliance reports
+Data Divisions con il loro scopo funzionale
+Procedure Divisions e il flow logico
+Variabili con level numbers, PIC clauses, group structures
+Paragraphs e sections con call relationships interni
+Embedded SQL/DB2 statements
+File access patterns e FD linkage
 
-"CAMF utilizza una pipeline tri-fasica che prepara il codice COBOL prima di tentare la conversione. Questa preparazione è fondamentale per il successo della migrazione.
-FASE 1: PREPARATION si concentra sul preparare il codice COBOL per la comprensione AI.
-Il primo step è Reverse Engineering. Questo non significa solo leggere il codice sorgente, ma estrarre l'essenza della business logic da multiple fonti: il codice stesso ovviamente, ma anche commenti esistenti nel codice che possono contenere informazioni preziose, documentazione tecnica che potrebbe esistere in formato cartaceo o PDF, user handbooks che spiegano come il sistema viene utilizzato dagli utenti finali, e crucialmente, Subject Matter Experts umani - i developer veterani che hanno lavorato sul sistema per decenni e detengono knowledge tribale non documentata. L'output di questo step è una comprensione completa del 'cosa fa' il sistema, non solo del 'come' è implementato.
-Il secondo step è Code Cleaning. L'obiettivo è rimuovere noise dal codice che non aggiunge valore per l'AI ma consuma context window prezioso. Questo include: rimuovere commenti inutili come change logs estesi negli header dei file - spesso i file COBOL legacy hanno centinaia di linee di commenti che documentano ogni modifica fatta negli ultimi 30 anni, questi non aiutano l'AI a capire la logica corrente. Eliminare informazioni non-value per context come boilerplate standard, dichiarazioni ripetitive, o sezioni di codice comentate che non sono più in uso. L'idea è: meno noise, più signal per l'AI.
-Il terzo step è Translation, ed è particolarmente importante nel caso Bankdata. Il loro codice COBOL era scritto in Danese - commenti, nomi di variabili, tutto in lingua danese. Questo è un problema perché GPT-4, pur essendo multilingue, è stato primarily trained su codice in inglese. Le sue performance calano significativamente su linguaggi naturali 'niche' come il danese quando applicati a code understanding. La soluzione: tradurre tutto il codice e i commenti in inglese prima di passarlo all'AI. Questo può sembrare un overhead, ma migliora drasticamente l'accuracy della conversione finale.
-FASE 2: ENRICHMENT fa l'opposto di cleaning - aggiunge context semantico che aiuta l'AI.
-Il primo step è Add Meaningful Comments. Sembra contraddittorio dopo aver fatto cleaning, ma la differenza è qualità vs quantità. I commenti buoni AIUTANO l'AI. Per esempio, aggiungere commenti che spiegano: 'questo blocco implementa il calcolo interessi composti secondo la formula Basel III' è molto più utile che avere 50 linee di change log. Particolarmente efficace è usare Markdown ben-strutturato, specialmente se questo markdown è stato generato da AI in un pass precedente - gli LLM tendono a comprendere meglio il proprio output formatting.
-Il secondo step è Identify Deterministic Structures. Il codice COBOL spesso ha pattern ricorrenti: stesso stile di error handling ripetuto 100 volte, stesso pattern di file I/O in ogni program, stesse convenzioni di naming. Identificare questi pattern permette all'AI di: applicare transformations consistenti, fare chunking intelligente del codice - processare blocchi simili insieme, e riconoscere 'idioms' COBOL che hanno equivalenti diretti in Java.
-Il terzo step è Document Temporary Results. Durante l'analisi, l'AI genera insights intermedi - per esempio, 'questo modulo gestisce validazione customer data'. Salvare questi insights in markdown files intermedi e riutilizzarli come context in step successivi crea una sorta di 'memoria' per la pipeline. Questo è particolarmente utile per mantenere consistency quando si processano molti file correlati.
-L'obiettivo complessivo di queste due fasi è arrivare alla Fase 3 con codice COBOL 'AI-ready': pulito da noise, arricchito con context semantico utile, tradotto in inglese, e con temporary analysis già available."
+I parametri di inferenza sono configurati per output deterministico:
+csharpvar executionSettings = new OpenAIPromptExecutionSettings
+{
+    MaxTokens = 32768,    // Gestisce programmi legacy di grandi dimensioni
+    Temperature = 0.1,    // Output quasi-deterministico
+    TopP = 0.5            // Output focalizzato
+};
 
-La FASE 3: AUTOMATION AIDS genera artefatti e analisi che supportano la migrazione e forniscono visibilità agli stakeholder umani.
-Flow Analysis & Visualization è il primo componente. Questa attività crea rappresentazioni visive delle call chains tra moduli COBOL. Per esempio, se PROGRAM-A chiama PROGRAM-B che chiama PROGRAM-C, il sistema genera un diagramma che mostra questo flow. Usa call chains esistenti quando disponibili nella documentazione, oppure li genera automaticamente analizzando CALL statements nel codice. I diagrammi sono generati in formato Mermaid - una sintassi text-based per creare diagrammi che può essere embedded direttamente in Markdown e renderizzata automaticamente in GitHub, GitLab, e molti altri tools. Alternativamente usa flowcharts tradizionali. Questi diagrammi servono principalmente come supporto per human engineers - permettono di capire rapidamente l'architettura del sistema senza dover leggere migliaia di linee di codice. Sono particolarmente utili durante code review per verificare che la conversione Java abbia mantenuto lo stesso flow logico.
-Test Generation è forse il componente più importante per garantire quality. Se esistono test files per i programmi COBOL originali, CAMF può: analizzare questi test per capire expected behavior, convertirli in JUnit test equivalenti per il codice Java generato, oppure espanderli aggiungendo edge cases che potrebbero non essere stati coperti originariamente. Se non esistono test, il sistema può sperimentare con un approccio Test-Driven Development: generare test basati sulla business logic estratta dal codice, usare questi test per validare la conversione Java, iterare fino a quando tutti i test passano. Questo è un safety net critico: senza test, non c'è modo di verificare che il codice Java generato sia funzionalmente equivalente al COBOL originale. I test generati coprono: unit tests per singole funzioni/metodi, integration tests per interazioni tra moduli, e idealmente anche regression tests per verificare che bug fixes storici non ritornino.
-Isolate Utility Functions è un'ottimizzazione importante. Molto codice COBOL include logic che oggi gestiremmo via libraries standard - per esempio, validazione date, formattazione stringhe, calcoli matematici comuni, conversioni tra formati. Il sistema identifica questi pattern: cerca funzioni che implementano logic 'utility-like', verifica se esistono equivalenti in Java standard library o librerie Quarkus comuni, e separa questa logic dal business logic core. Benefici: riduce la quantità di codice che deve essere convertito custom, riduce token usage per l'AI (meno codice da processare), e migliora maintainability del codice finale - meglio usare Math.round() che convertire una COMPUTE statement custom. Il processo produce una lista di 'utility functions detected' con suggested Java equivalents, e il codice può essere refactored per usare queste libraries invece di re-implementare tutto da zero.
-L'output complessivo della Fase 3 include: Mermaid diagrams salvati in formato .mmd o embedded in documentation Markdown, generated test suites in JUnit format pronti per execution, report su utility functions identificate con mapping a Java standard libraries, e crucialmente, tutto questo è human-reviewable - non è codice finale auto-deployed, ma artefatti che gli engineers possono inspect e approve.
+Agent 2: DependencyMapperAgent
+È il cervello architetturale del sistema. Analizza le relazioni tra programmi COBOL rilevando 8 tipi di statement con line numbers:
+
+CALL — Invocazioni di programmi esterni
+COPY — Inclusioni di copybook
+PERFORM — Procedure calls e loop interni
+EXEC SQL — Embedded SQL statements
+READ — Operazioni di lettura file
+WRITE — Operazioni di scrittura file
+OPEN — Apertura file handles
+CLOSE — Chiusura file handles
+
+Ogni dipendenza viene tracciata con il line number esatto, permettendo audit e debug precisi. L'output alimenta sia il grafo nel portal che il contesto per il JavaConverterAgent.
+Genera anche diagrammi Mermaid automaticamente — flowcharts che visualizzano le dipendenze con layout 'graph TB' o 'graph LR' basato sulla complessità del sistema.
+Agent 3: JavaConverterAgent
+Il transformation engine. Genera codice Java Quarkus production-ready dal COBOL analizzato. Ha guidelines specifiche per evitare 'JOBOL' — codice Java che replica direttamente la struttura COBOL invece di essere idiomatico:
+
+Sostituire PERFORM con loop strutturati (for, while, do-while) o method calls
+Eliminare GOTO ristrutturando la logica con if-else, switch-case, o metodi ben definiti
+Applicare modern Java best practices con features Quarkus (dependency injection, reactive patterns)
+
+Include retry logic con exponential backoff per gestire content filtering e timeouts di Azure OpenAI — essenziale per robustezza enterprise.
+Hybrid Database Architecture (non mostrata nel diagramma):
+CAMF usa un'architettura dual-database:
+
+SQLite (Data/migration.db): metadata strutturati, contenuto file, analisi AI, codice generato
+Neo4j (bolt://localhost:7687): grafi delle dipendenze, relazioni, visualizzazioni
+
+Questa separazione ottimizza le query: SQLite risponde a "cosa c'è in questo file?", Neo4j risponde a "cosa dipende da questo file?" — due pattern di accesso fondamentalmente diversi."
+
+[SLIDE 3 - Pipeline: Fase 1 e 2]
+"La pipeline di CAMF è strutturata in tre fasi distinte. Le prime due — Preparation e Enrichment — sono spesso sottovalutate ma sono critiche per la qualità dell'output.
+FASE 1: PREPARATION
+L'obiettivo è preparare il codice COBOL per essere compreso dall'AI. Il team Microsoft ha scoperto empiricamente che la qualità del contesto in input è il fattore determinante per la qualità dell'output.
+Reverse Engineering:
+Non è solo parsing sintattico. Implica estrarre la business logic implicita da:
+
+Il codice stesso (strutture, naming conventions)
+Commenti esistenti (quando informativi)
+Documentazione tecnica legacy
+User handbooks e manuali operativi
+SME umani — Subject Matter Experts che conoscono il sistema
+
+Questo produce un glossary (Data/glossary.json) che mappa termini tecnici COBOL a concetti business, usato poi per arricchire il contesto degli agenti.
+Code Cleaning:
+Rimuovere informazioni che non aggiungono valore al contesto AI. Esempio tipico: i change logs negli header dei file COBOL — righe come:
+cobol* 2003-05-12 JKS MODIFIED FOR Y2K COMPLIANCE
+* 2005-08-23 MLR ADDED NEW FIELD WS-AMOUNT-2
+```
+Questi consumano token senza fornire informazione utile per la traduzione. Il cleaning libera context window per contenuto semanticamente rilevante.
+
+**Translation:**
+Nel caso Bankdata, il codice era in **danese** — una lingua di nicchia non presente in tutti i training set dei modelli. Tradurre commenti e nomi variabili in inglese migliora significativamente la comprensione del modello.
+
+**FASE 2: ENRICHMENT**
+
+L'obiettivo è arricchire il codice con contesto semantico che aiuti l'AI.
+
+**Add Meaningful Comments:**
+A volte l'opposto del cleaning è necessario. Commenti ben scritti — specialmente se **generati dall'AI stessa** in una fase precedente — aiutano a mantenere coerenza nelle fasi successive.
+
+**Markdown ben-strutturato:**
+Il team ha scoperto che contenuto in formato **markdown strutturato** — headers, bullet points, code blocks — è significativamente più efficace come contesto rispetto a testo non formattato. Questo è coerente con come i modelli sono stati trainati su documentazione tecnica.
+
+**Identify Deterministic Structures:**
+Pattern ricorrenti nel codice COBOL — come strutture di validazione input, gestione errori, logging — possono essere identificati e trattati in modo template-based invece che generativo, riducendo variabilità e errori.
+
+**Document Temporary Results:**
+Salvare le analisi intermedie permette di costruire contesto incrementalmente. Se l'Agent 1 produce un'analisi di alta qualità, questa viene persistita e riusata invece di essere rigenerata."
+
+---
+
+### **[SLIDE 4 - Pipeline: Fase 3 - Automation Aids]**
+
+"La Fase 3 fornisce **artefatti e analisi** che supportano la migrazione umana oltre alla conversione automatica.
+
+**Flow Analysis & Visualization:**
+
+I **diagrammi Mermaid** generati automaticamente visualizzano:
+- Call trees tra programmi
+- Dipendenze copybook
+- Circular dependencies (potenziali problemi architetturali)
+- Critical files (nodi con alto in-degree o out-degree)
+
+Questi non sono solo 'nice to have' — sono strumenti per gli **architetti umani** che devono validare e pianificare la migrazione.
+
+Il DependencyMapperAgent usa due prompt specializzati:
+
+*Prompt 1 - Mermaid Generation:*
+```
+Create a clear, well-organized Mermaid flowchart that shows COBOL program dependencies.
+Use 'graph TB' or 'graph LR' based on complexity.
+Group related items using subgraphs.
+Use different colors for programs (.cbl) vs copybooks (.cpy).
+```
+
+*Prompt 2 - Architectural Analysis:*
+```
+Analyze the COBOL code structure and identify:
+1. Data flow dependencies between copybooks
+2. Potential circular dependencies
+3. Modularity recommendations
+4. Legacy patterns that affect dependencies
+Test Generation:
+Se esistono test file legacy, CAMF può costruire su di essi o sperimentare con un approccio TDD (Test-Driven Development) dove i test vengono generati prima della conversione e usati per validare l'output.
+Questo è critico: senza strutture deterministiche di controllo (test), è impossibile validare la correttezza delle traduzioni.
+Isolate Utility Functions:
+Molto codice COBOL include logica che oggi gestiremmo via librerie standard: formatting di date, conversioni numeriche, string manipulation. Isolare e rimuovere questo codice early nella pipeline:
+
+Riduce il volume di codice da tradurre
+Riduce il consumo di token
+Permette di usare librerie Java moderne invece di tradurre pattern obsoleti
+
+Metriche reali dal caso Bankdata:
+MetricaValoreFile COBOL processati102File Java generati99Success rate97%Chiamate API Azure OpenAI205Tempo totale~1.2 oreCosto totale$0.31
+Questi numeri sono ordini di grandezza inferiori ai costi dei Global System Integrators tradizionali."
+
+[SLIDE 5 - Portal COBOL Migration Insights]
+"Quello che vedete è il portal web di CAMF, accessibile su localhost:5028. È un'interfaccia a tre pannelli:
+Pannello sinistro - MCP Resources:
+
+Accesso alle risorse via Model Context Protocol (MCP)
+Example queries pre-configurate per analisi comuni
+Shortcuts a documentazione e data guide
+
+Pannello centrale - Chat Interface:
+
+Interazione in linguaggio naturale con Azure OpenAI
+Query sui dati di migrazione: "What are the circular dependencies?", "Which COBOL files have the highest impact?"
+L'AI risponde interrogando sia SQLite (metadata) che Neo4j (grafi)
+
+Pannello destro - Dependency Graph:
+
+Visualizzazione interattiva delle dipendenze
+Node Filters: Programs, Copybooks, Called Programs
+Edge Filters: CALL, COPY, PERFORM, EXEC, READ, WRITE, OPEN, CLOSE — color-coded
+Layout force-directed con zoom/pan
+
+Multi-run support:
+Il dropdown "Migration Run" permette di switchare tra run storici. Query come "Show me run 42" aggiornano automaticamente sia le risposte chat che il grafo.
+Learnings tecnici dal team Microsoft:
+
+Context overflow: Quando viene fornito troppo contesto, gli agenti perdono coerenza. Con contesto sufficientemente corto, la qualità era sorprendentemente alta.
+Call-chain depth limit: La gestione delle call-chain — quale modulo chiama quale, a quale profondità — è risultata uno dei problemi più difficili. Il team ha raggiunto depth 3, ma non oltre.
+Deterministic structures essenziali: Senza test, nessuna garanzia di correttezza."
+
+
+[CLOSING - Rilevanza e Considerazioni]
+"Punti di forza di CAMF per il nostro contesto:
+
+Open source: Nessun vendor lock-in, agent prompts modificabili
+No training required: Usa LLM off-the-shelf via prompt engineering
+Costi trasparenti: $0.31 per 102 file vs costi GSI
+Testato su codice reale: Bankdata, non toy examples
+Architettura modulare: Possiamo usare solo il DependencyMapperAgent per analysis
+
+Limitazioni:
+
+Richiede Azure OpenAI (non OpenAI API standard out-of-box)
+Call-chain depth ~3 può non bastare per sistemi molto accoppiati
+Test suite esistente necessaria per validazione
+
+Domande per il nostro team:
+
+Abbiamo accesso ad Azure OpenAI?
+Quale target: Java Quarkus o C# .NET?
+Esistono test suite per i nostri sistemi COBOL?"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 ### 6.2 Reforge-AI
-Reforge-AI opera attraverso un processo bi-fasico molto deliberato, dove ogni fase ha obiettivi chiari e deliverables specifici.
-FASE 1: DOCUMENTATION è gestita dallo script Python gen_docs.py e ha come goal generare documentazione autoritativa PRIMA di toccare qualsiasi codice. Questo è il pilastro del documentation-first approach.
-Tecnicamente, la fase usa una Documentation Crew composta da agenti specializzati: un Architecture Analyzer con role 'Senior Architect' che scansiona il codebase e existing Javadoc per inferire module boundaries, data flows, e integration points, un Diagram Generator con role 'Technical Writer' che crea rappresentazioni visive, un Dependency Mapper con role 'Build Engineer' che analizza le relazioni tra componenti, e un Plan Writer con role 'Migration Specialist' che sintetizza tutto in un piano eseguibile.
 
-Il processo di Automated Architecture Capture funziona così: gli agents scansionano il codebase Java legacy identificando EJB components con annotations come @Stateless, @Stateful, @Singleton, mappano il persistence layer cercando JPA entities e DAOs, documentano REST endpoints e le loro dependencies, e creano component diagrams in sintassi Mermaid. Il focus è su: module boundaries e coupling levels, data flow tra components, e external integrations con databases e APIs.
-L'output di questa fase include: sequence diagrams e component diagrams tutti in formato Mermaid che può essere embedded in Markdown, dependency graphs delle third-party libraries mostrando Maven dependencies, service catalogs con endpoint signatures documentando ogni API REST disponibile, e crucialmente un file plan.yaml che contiene il migration plan dettagliato con module prioritization, transformation strategies per ogni module, dependency order per evitare breaking changes, e risk assessment per ogni step.
-Un aspetto fondamentale è l'Iterative Human-in-the-Loop Refinement. Invece di fidarsi ciecamente di un single LLM pass, Reforge-AI implementa un improvement loop: primo, AI genera documentazione e diagrams initial, secondo, engineers reviewano tutto, terzo, feedback viene fed back negli agents' prompts, quarto, agents re-renderizzano updated diagrams e text, e quinto, repeat fino ad approval. Questo loop ibrido riflette best practices in developer documentation dove visual elements sono critical per complex workflows. By the end of Phase 1, il team ha una battle-tested migration plan con rich Mermaid visuals e precise upgrade steps validati da humans.
-FASE 2: CODE GENERATION è gestita dallo script gen_modern.py e usa la documentazione generata in Fase 1 come blueprint per la migrazione effettiva.
-La fase usa una Gen Code Crew con agenti ultra-specializzati: il Code Conversion Agent con role 'Senior Java Developer' trasforma EJB in Spring components, sostituisce @Stateless annotations con @Service, usa constructor-based dependency injection con @Autowired invece di field injection, converte @PersistenceContext in Spring Data repositories eliminando boilerplate DAO code, aggiunge @Transactional dove necessario per transaction boundaries, e implementa proper exception handling con custom exceptions e @ControllerAdvice. Converte anche Java EE patterns in Spring Boot idioms: per esempio, servlet filters diventano Spring interceptors, EJB timers diventano @Scheduled methods, e JNDI lookups vengono rimossi in favore di dependency injection pura.
-Il Dependency Update Agent con role 'Build Engineer' gestisce l'upgrade completo della base tecnologica: aggiorna Java version da 8 a 21 modificando pom.xml e source/target compatibility, migra dependencies da Java EE packages javax.* a Jakarta EE packages jakarta.*, aggiorna Spring Framework da versioni legacy a Spring Boot 3, gestisce plugin configurations modernizzando maven-compiler-plugin, spring-boot-maven-plugin settings, e risolve breaking changes in API deprecate cercando alternatives nelle nuove versioni.
-Il Test Scaffolding Agent con role 'QA Engineer' crea una safety net completa: genera unit tests usando JUnit 5 invece di vecchio JUnit 4, crea integration tests con @SpringBootTest per testing end-to-end, imposta test configurations con @TestConfiguration e mock beans, e assicura che ogni method critico abbia almeno un test case.
-Il Compliance Check Agent con role 'Security Specialist' è responsabile della sicurezza e quality: verifica che security annotations siano presenti come @PreAuthorize, @Secured dove necessario, applica style guides aziendali per consistent code formatting, incorpora OWASP best practices contro common vulnerabilities come SQL injection, XSS, CSRF, e valida che non ci siano hardcoded credentials o sensitive data nel codice.
-Il workflow orchestrato processa one module at a time seguendo l'ordine definito nel plan.yaml. Per ogni module: legge la documentazione generata in Phase 1 come context, Code Conversion Agent trasforma il codice, Dependency Update Agent aggiorna pom.xml, Test Scaffolding Agent genera tests, Compliance Check Agent valida tutto, un Build Agent (non menzionato prima ma implicito) tenta compilation, genera build/test report, poi human review decide approve or provide feedback, se feedback gli agents iterano, finally move to next module. Questo è un processo deliberato e controllato, non una Big Bang migration.
-L'output per ogni module include: clean Spring Boot services con proper Spring annotations @Service, @Repository, @RestController, updated build scripts con pom.xml modernizzato e dependencies corrette, auto-generated DTOs e mapping logic per separare presentation layer da business layer, build/test reports per ogni module mostrando compilation status e test results, e feedback sections embedded nei reports per human reviewers.
 
-Vediamo ora il contesto d'uso concreto di Reforge-AI, gli output che produce, e le limitazioni riconosciute.
+[SLIDE 1 - REFORGE-AI - Introduzione]
+"REFORGE-AI è un progetto sviluppato da Gian Paolo Santopaolo, pubblicato a maggio 2025, che dimostra un approccio agentico alla modernizzazione di codice legacy su larga scala.
+Chiarimento importante per il nostro contesto:
+REFORGE-AI è specifico per la migrazione Java Legacy → Spring Boot, non per COBOL. Tuttavia, lo includiamo in questa analisi perché il pattern architetturale — documentation-first con multi-agent orchestration — è direttamente applicabile anche alla modernizzazione COBOL. È un template metodologico più che un tool specifico.
+I punti chiave:
+Sistema agente AI basato su GPT-4:
+Non usa un singolo prompt monolitico, ma un'architettura multi-crew costruita su CrewAI, un framework per orchestrazione di agenti AI. CrewAI permette di definire 'crew' di agenti specializzati che collaborano su task complessi.
+Documentation-first approach:
+L'insight fondamentale è generare documentazione autoritativa PRIMA di toccare il codice. Questo inverte l'approccio tradizionale dove la documentazione è un afterthought. La documentazione diventa il blueprint — letteralmente il prompt contestuale — per la fase di code generation.
+Perché Spring Boot?
+Il proof of concept usa il classico sample JBoss Kitchensink — un'applicazione Java EE di riferimento — ma l'obiettivo reale è la modernizzazione di sistemi bancari enterprise. Le banche tipicamente affrontano:
 
-**USE CASE**: Banking Legacy Java Migration è il domain target principale. Le banche tipicamente hanno applicazioni Java enterprise sviluppate negli anni 2000-2010 con tecnologie come Java EE, EJB, JSF, Struts. Queste applicazioni contengono decadi di business logic mission-critical: calcoli di interessi composti, gestione conti correnti, processing transazioni, compliance regulatory. Il technical debt è massiccio: frameworks obsoleti non più supportati, coupling stretto tra components che rende difficile testing, e sparse documentation perché la knowledge è nella testa dei developer veterani. I migration risks sono altissimi: potential business disruption se qualcosa va storto, regression bugs in critical paths potrebbero causare perdite finanziarie, loss of institutional knowledge durante la transition, e compliance audit requirements richiedono traceability completa di ogni modifica.
-Reforge-AI affronta questo con Phased Incrementalism: break migrations in logical slices come account services, transaction services, reporting modules, ogni slice segue il ciclo document → migrate → test → deploy, questo riduce risk e aligns con banking de-risking strategies. Include anche Compliance Integration: il Compliance Check Agent verifica OWASP guidelines automaticamente, inserisce security annotations dove necessario, mantiene audit trail completo tramite Git history più reports, e garantisce test coverage per ogni module per soddisfare audit requirements. Un esempio concreto: un modulo 'AccountService' con 500 linee di EJB code viene documentato, il plan.yaml specifica le transformations necessarie, il Code Conversion Agent genera Spring Boot code equivalente, i test vengono generati e eseguiti, e il tutto viene reviewato da un senior developer prima di merge.
-Gli OUTPUT sono completi e multi-livello.
-La Architecture Documentation include: component diagrams in Mermaid mostrando services e loro relationships, sequence diagrams per key user flows come login, transaction processing, dependency graphs delle Maven dependencies con versioni attuali e target, e module boundaries map che identifica bounded contexts per eventual microservices decomposition.
-I Migration Plans sono il file plan.yaml che contiene: module prioritization con high/medium/low urgency, transformation strategies dettagliate per ogni module tipo ejb_to_spring, rest_controller, jpa_repository, dependency order per garantire che modules siano migrati in ordine sicuro evitando broken builds, e risk assessment per ogni step identificando high-risk changes che richiedono extra scrutiny.
-La Module Analysis fornisce per-module detailed analysis: business logic extraction spiegando in plain language cosa fa ogni module, API contracts documentation con input/output schemas, integration points identificando databases, external APIs, message queues, e data flow maps mostrando come i dati fluiscono attraverso il sistema.
-Il Modernized Code è production-ready: Spring Boot services con @Service, @Repository, @RestController annotations appropriate, updated pom.xml files con Java 21 e Spring Boot 3 dependencies, configuration files come application.yml con database connections e properties, e proper package structure seguendo best practices Spring Boot.
-I Generated Tests includono: unit tests con JUnit 5 usando @Test, @ParameterizedTest, integration tests con @SpringBootTest per end-to-end scenarios, e test configuration con @TestConfiguration e mock beans per isolation.
-I Reports prodotti sono: build logs per ogni module mostrando se la compilation è successful, test reports con coverage percentages e failed test details, conversion metrics come total modules processed, lines of code migrated, complexity reduction, e compliance validation reports confermando che security requirements sono soddisfatti.
-Infine, Feedback and Suggestions sono embedded in ogni document: per ogni document/module ci sono checkpoints dove human reviewers possono approve or reject, section per capture notes e improvement ideas, e approval workflow che traccia chi ha reviewato cosa e quando.
-Le LIMITAZIONI riconosciute sono importanti da capire.
-Costi elevati con API GPT-4: ogni module migration richiede multiple API calls a GPT-4, la Fase 1 documentation per un progetto medio può costare centinaia di dollari in API fees, e la Fase 2 code generation moltiplica questo costo per numero di modules. Per progetti enterprise con centinaia di modules, i costi possono diventare proibitivi. Una soluzione parziale è usare modelli più economici come GPT-3.5-turbo per tasks semplici, ma questo può ridurre quality.
-Specializzato in Java Legacy: Reforge-AI è ottimizzato specificamente per Java EE to Spring Boot migrations. Non supporta altri linguaggi come COBOL, Python, .NET. Non supporta altri target frameworks come Micronaut o Quarkus (anche se teoricamente adattabile). Questo significa che per una migration strategy multi-language, serve combinare con altri tools.
-Build Agent Hallucinations: questo è un problema comune con LLM-based tools. Il Build Agent che simula build logs può essere inaccurato: potrebbe riportare 'build successful' quando in realtà ci sono compilation errors, oppure riportare test failures che non esistono. Questo richiede human verification: sempre eseguire build reali con Maven, sempre eseguire test suite complete, e mai fidarsi ciecamente dei reports generati dall'AI. Il monitoring via Langtrace (uno strumento di observability per LLM applications disponibile su app.langtrace.ai) può aiutare a identificare quando l'AI sta hallucinating.
-Altre limitazioni dal README GitHub includono: hardcoded paths nel codice che richiedono manual changes, inconsistent model outputs dove running gen_docs.py multiple volte produce different results, agent tool errors dove il LLM sometimes refuses to read documents per problemi di tool selection, e inability to delete folders richiedendo manual cleanup.
-Nonostante queste limitazioni, Reforge-AI dimostra che l'approccio agentic con documentation-first può drastically ridurre lo sforzo manuale in migrations enterprise-scale, anche se human oversight rimane assolutamente essential.
+Code ownership silos: sviluppatori veterani con tribal knowledge che resistono al cambiamento
+Documentazione sparsa o obsoleta: nuovi team costretti a reverse-engineering
+Compliance bar elevata: traceability e security reviews obbligatorie
+
+Questi sono esattamente i problemi che affrontiamo anche nella modernizzazione COBOL."
+
+[SLIDE 2 - Fase 1 Documentation e Fase 2 Code Generation]
+"L'architettura di REFORGE-AI si articola in due fasi distinte ma interconnesse.
+FASE 1: DOCUMENTATION
+La 'Documentation Crew' — un team di agenti AI — scansiona il codebase e il Javadoc esistente per inferire:
+
+Module boundaries e responsabilità
+Data flows tra componenti
+Integration points con sistemi esterni
+
+Output specifici:
+
+Sequence e component diagrams in sintassi Mermaid
+Dependency graphs delle librerie third-party
+Service catalogs con endpoint signatures
+
+Perché Mermaid? È una sintassi semplice ma potente per diagrammi che si integra direttamente in Markdown. I team possono impararla in un giorno e i diagrammi restano close to the code — aggiornabili insieme al codice stesso.
+Human-in-the-Loop Refinement:
+Questo è un punto critico che distingue REFORGE-AI da approcci fully-automated. Invece di fidarsi di un singolo pass LLM, implementa un improvement loop:
+
+Gli ingegneri reviewano i docs auto-generati
+Il feedback viene incorporato nei prompt degli agenti
+Gli agenti ri-renderizzano diagrammi e testo aggiornati
+
+Questo approccio ibrido è essenziale perché mitiga le hallucinations e garantisce allineamento con i requisiti di security e compliance. Alla fine della Fase 1, i team hanno un battle-tested migration plan con visualizzazioni Mermaid e step di upgrade precisi.
+FASE 2: CODE GENERATION
+La 'Gen Code Crew' configura agenti dedicati per task specifici:
+Code Conversion Agent:
+
+Trasforma EJB → Spring components (@Service, @Repository)
+Converte Java EE patterns → Spring Boot idioms
+Genera DTOs e mapping logic automaticamente
+
+Dependency Update Agent:
+
+Migra Java 8 → Java 21 (o Java 17 nel paper originale)
+Aggiorna dependencies: Java EE → Spring Boot 3
+Gestisce configurazioni plugin Maven
+
+Test Scaffolding (implicito nel tuo Compliance Check Agent):
+
+Genera JUnit 5 unit tests
+Crea integration tests per i nuovi endpoints
+
+Compliance Check Agent:
+
+Verifica security annotations (@Secured, @PreAuthorize)
+Applica style guides aziendali
+Valida contro checklist compliance
+
+Multi-Agent Choreography:
+Questa separazione in agenti specializzati riflette un trend più ampio: gli AI agents come team members, non semplici autocomplete tools. Ogni agente ha una persona distinta ottimizzata per il suo task, e la documentazione generata in Fase 1 fornisce il contesto condiviso che permette agli agenti di lavorare coerentemente.
+Gli agenti processano un modulo alla volta, producendo:
+
+Clean Spring Boot services con annotazioni corrette
+Build scripts aggiornati con plugin configurations moderne
+DTOs auto-generati con mapping logic
+
+Il codice 'just compiles' nella maggior parte dei casi, grazie allo scaffolding documentale e ai project skeletons forniti agli agenti."
+
+[SLIDE 3 - Use Case e Limitazioni]
+"Il use case presentato è Banking Legacy Java Migration — esattamente il contesto enterprise dove questi approcci hanno più valore.
+Output generati:
+ArtefattoDescrizioneArchitecture DocumentationDiagrammi Mermaid, module analysisMigration PlansStep-by-step upgrade pathModule AnalysisDependency graphs, integration pointsModernized CodeSpring Boot services, DTOs, configsTestsJUnit 5 unit e integration testsReportsCompliance checks, coverage reportsFeedback & SuggestionsRecommendations per improvement
+Best Practices identificate:
+
+Phased Incrementalism: Spezzare le migrazioni in slice logici (es. account services, transaction services). Questo riduce il rischio e si allinea con le strategie di de-risking bancarie.
+Mermaid-First Documentation: Embedding diagrammi direttamente in Markdown garantisce che i docs restino vicini al codice e siano facili da aggiornare.
+Agentic Orchestration: Usare agenti multipli specializzati invece di un prompt monolitico.
+Human-in-the-Loop Guardrails: Review regolari catturano hallucinations e garantiscono allineamento con security e compliance.
+
+LIMITAZIONI — Onestamente dichiarate:
+1. Costi elevati (API GPT-4):
+Questo è un fattore reale. GPT-4 API costs possono scalare rapidamente su codebase enterprise. Per un sistema con migliaia di file, i costi possono diventare significativi. Tuttavia, vanno comparati con i costi alternativi: mesi-uomo di sviluppatori senior.
+2. Specializzato in Java Legacy:
+REFORGE-AI è purpose-built per Java EE → Spring Boot. Non è generalizzabile out-of-the-box a COBOL o altri linguaggi. Per COBOL, servono tool come CAMF o XMainframe.
+3. Built Agent Hallucinations:
+Le hallucinations LLM sono un problema reale, specialmente in due aree identificate:
+UI Generation:
+Gli LLM eccellono nel backend refactoring ma falter su layout frontend intricati e CSS frameworks. Per progetti grandi, gli UI developers rimangono indispensabili per interfacce pixel-perfect.
+pom.xml & Dependency Graphs:
+Gli LLM general-purpose spesso mishandle le transitive dependencies Maven e le plugin versions, causando broken builds. Pipeline specializzate o tooling compiler-aware devono complementare gli LLM per stabilizzare i dependency trees.
+Queste limitazioni evidenziano che, anche con AI agentica avanzata, l'expertise umana in UI/UX e build engineering rimane critica — è una partnership sinergistica human-AI, non una sostituzione."
+
+[CLOSING - Rilevanza per il nostro contesto COBOL]
+"Perché includiamo REFORGE-AI in una presentazione sulla migrazione COBOL?
+Non perché sia applicabile direttamente — non lo è. Ma perché dimostra pattern architetturali che sono trasferibili:
+
+Documentation-first approach: Generare documentazione autoritativa prima di toccare il codice funziona anche per COBOL. CAMF fa esattamente questo con la sua Fase 1 di Preparation.
+Multi-agent specialization: Separare analysis, dependency mapping, e code conversion in agenti dedicati è un pattern che vediamo anche in CAMF (COBOLAnalyzerAgent, DependencyMapperAgent, JavaConverterAgent).
+Human-in-the-loop refinement: Nessun sistema AI può operare fully-automated su migrazioni enterprise. Il feedback loop umano è essenziale.
+Phased incrementalism: Processare un modulo alla volta, validare, procedere — funziona indipendentemente dal linguaggio source.
+
+Confronto rapido:
+AspettoREFORGE-AICAMFSource LanguageJava EECOBOLTargetSpring BootJava Quarkus / C# .NETFrameworkCrewAISemantic KernelLLMGPT-4Azure OpenAI (GPT-4.1/5)Documentation-first✅ Sì✅ SìMulti-agent✅ Sì✅ SìHuman-in-the-loop✅ Esplicito✅ ImplicitoOpen SourceSample project✅ GitHub
+Takeaway:
+REFORGE-AI è un reference implementation di come strutturare un sistema di modernizzazione AI-driven. I principi — documentation-first, multi-agent, human-in-the-loop — sono language-agnostic e applicabili anche al nostro contesto COBOL.
 
 ---
 
