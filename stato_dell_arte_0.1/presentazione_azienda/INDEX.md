@@ -291,147 +291,57 @@ Il valore principale per il nostro contesto è dimostrare che un approccio data-
 ---
 
 ## 5. TRADUZIONE AUTOMATICA DEL CODICE CON LLM (6-7 min)
+Adesso presentiamo lo stato dell'arte della traduzione automatica con il codice con LLM.
+Abbiamo preso in considerazione una tecnica che non progetta LLM da zero, ne che richieda training o finetuning.
+E' una tecnica che vuole migliorare le prestazioni nel task di traduzione automatica di codice basandosi sugli llm presenti nel mercato.
 
 ### 5.1 Traduzioni Transitive: InterTrans
 **Contenuto della slide:**
 
 
-[SLIDE 1 - Introduzione]
+ **[Slide 1: Introduzione]**
+INTERTRANS è un approccio di code translation basato su LLM presentato nel 2024 da Macedo et al.
+L'intuizione chiave deriva dalla machine translation per linguaggi naturali:
+Tradurre tra certe coppie di lingue è più facile che tra altre. Per migliorare traduzioni difficili, una strategia consolidata è usare una rappresentazione intermedia per la traduzione di codice
 
-INTERTRANS è un approccio di code translation basato su LLM che sfrutta traduzioni intermedie transitive per migliorare l'accuratezza della traduzione automatica di codice. È stato presentato come conference paper nel 2025 da Macedo et al. (Queen's University, Huawei Canada, University of Waterloo).L'intuizione chiave deriva dalla machine translation per linguaggi naturali: tradurre tra certe coppie di lingue è più facile che tra altre. Per migliorare traduzioni difficili, una strategia comune è usare una pivot language — ad esempio, la traduzione statistica tra francese e tedesco spesso passa attraverso l'inglese come ponte.Perché questo è rilevante per il code translation? Studi recenti mostrano che anche i LLM soffrono di questo problema. Pan et al. (2024) hanno dimostrato che l'80% degli errori nella traduzione C++→Go sono dovuti a differenze sintattiche e semantiche, mentre solo il 23.1% degli errori si verifica traducendo C++→C. Questo suggerisce che certi linguaggi sono naturalmente più vicini tra loro.INTERTRANS sfrutta questa osservazione: invece di tradurre direttamente Python→Java, potrebbe essere più efficace tradurre Python→Rust→Java, usando Rust come bridge language che condivide caratteristiche con entrambi.A differenza di TransCoder-IR, che usa una rappresentazione intermedia a livello di compilatore (LLVM IR), INTERTRANS usa linguaggi di programmazione esistenti come intermediari, sfruttando le capability multilingue dei code LLM già pre-trainati su decine di linguaggi."
 
+**[Slide 2: Perche' e' rilevante?]**
 
-[SLIDE 2 - Tree of Code Translation]
-
-"L'architettura di INTERTRANS si articola in due stage.
-Stage 1: Tree of Code Translations (ToCT)
-ToCT è un algoritmo di planning che genera tutti i possibili path di traduzione da un linguaggio sorgente Ls a un linguaggio target Lt, dato un set di linguaggi intermedi L e un parametro maxDepth che limita la profondità dell'albero.
-L'algoritmo funziona così:
-
-Inizializza una coda Q con il linguaggio sorgente
-Per ogni nodo, espande verso tutti i linguaggi intermedi L ∪ {Lt}, escludendo il linguaggio corrente (non puoi tradurre Python→Python)
-Se raggiungi Lt, aggiungi il path alla lista finale
-Continua fino a raggiungere maxDepth
-
-Nota importante: il set L include il linguaggio sorgente Ls ma esclude il target Lt. Questo perché Lt deve essere sempre l'endpoint finale, mentre Ls può apparire come step intermedio (per casi dove tradurre "avanti e indietro" può semplificare il codice).
-Nell'esempio della slide, per tradurre Python→Java con maxDepth=3 e L={Python, Rust, JavaScript, C++, Go}, ToCT genera path come:
-
-[Python, Java] — traduzione diretta
-[Python, Rust, Java]
-[Python, C++, Java]
-[Python, Rust, JavaScript, Java]
-E così via...
-
-Stage 2: Sequential Verification con Early Stopping
-I path generati vengono ordinati per lunghezza crescente (shortest-first) e verificati in ordine breadth-first. Per ogni path:
-
-Si esegue la catena di traduzioni usando l'LLM
-Se il risultato finale in Lt passa la test suite → STOP, ritorna la traduzione
-Altrimenti, continua con il path successivo
-
-Due ottimizzazioni critiche:
-
-Memoization: se due path condividono un prefisso (es. [Python, Rust, Java] e [Python, Rust, JavaScript, Java] condividono l'edge Python→Rust), il risultato intermedio viene cachato e riutilizzato
-Early stopping: appena un path produce una traduzione corretta, l'algoritmo termina
-
-Questo è fondamentale perché, dai dati sperimentali, il 75% delle traduzioni riuscite richiede al massimo 2 tentativi, e la media è di soli 3.9 tentativi — molto meno del worst-case teorico di 85 tentativi con maxDepth=4."
+Studi recenti mostrano che anche i LLM soffrono di questo problema. Pan et al. (2024) hanno dimostrato che l'80% degli errori nella traduzione C++→Go sono dovuti a differenze sintattiche e semantiche, mentre solo il 23.1% degli errori si verifica traducendo C++→C. Questo suggerisce che certi linguaggi di programmazione sono naturalmente più 'vicini' tra loro.
+INTERTRANS sfrutta questa osservazione: invece di tradurre direttamente Python→Java, potrebbe essere più efficace tradurre Python→Rust→Java, usando Rust come bridge language che condivide caratteristiche con entrambi.
 
 
 
-[SLIDE 3 - Use Case]
+**[Slide 3 : Tecnica per migliorare gli LLM gia' esistenti]**
 
-"Vediamo perché i path intermedi funzionano meglio con un esempio concreto dal paper.
+La pipeline di INTERTRANS si articola in 3 steop
+
+1.ToCT è un algoritmo di planning che genera tutti i possibili path di traduzione da un linguaggio sorgente a un linguaggio target .
+
+
+2.Per ogni percorso LLM genera traduzioni fino al maxDepth
+
+3.Se il risultato finale passa la test suite, ritorna la traduzione migliore  (75% delle traduzioni riuscite richiede in media 3.9 tentativi)
+
+
+
+**[Slide 4 : Use case]**
+Vediamo perché i path intermedi funzionano meglio con un esempio concreto dal paper.
 Caso: Python→Java via Rust
 Nel codice Python sorgente, l'espressione if int(number_as_string[0]) in odd_digits verifica se una cifra appartiene a una tupla di interi dispari.
-La traduzione diretta Python→Java tenta di usare Arrays.asList(odd_digits).contains(). Ma c'è un problema: Arrays.asList() in Java accetta solo reference types, non primitive types. Passando un int[], si ottiene un List<int[]> (una lista contenente un singolo array), non un List<Integer>. Il codice compila ma fallisce semanticamente.
-La traduzione via Rust risolve questo problema. Rust usa esplicitamente un HashSet<i32> per odd_digits. Quando questo viene tradotto a Java, l'LLM genera correttamente un Set<Integer> con Arrays.asList(1, 3, 5, 7, 9) — e il metodo contains() funziona correttamente.
-Perché funziona? Rust ha un type system più esplicito e rigido di Python. Forzando l'LLM a "pensare" in termini di tipi Rust, emerge una rappresentazione intermedia più precisa che si mappa meglio su Java.
-Altri pattern identificati nel paper:
+La traduzione diretta Python→Java fallisce:
+L'LLM tenta di usare Arrays.asList(odd_digits).contains(). Ma c'è un problema sottile: Arrays.asList() in Java accetta solo reference types, non primitive types. Passando un int[], si ottiene un List<int[]> — una lista contenente un singolo array — non un List<Integer>. Il codice compila ma fallisce semanticamente.
+La traduzione via Rust risolve il problema:
+Rust usa esplicitamente un HashSet<i32> per odd_digits. Quando questo viene tradotto a Java, l'LLM genera correttamente un Set<Integer> con Arrays.asList(1, 3, 5, 7, 9) — e il metodo contains() funziona correttamente.
+Perché funziona?
+Rust ha un type system più esplicito e rigido di Python. Forzando l'LLM a 'pensare' in termini di tipi Rust, emerge una rappresentazione intermedia più precisa che si mappa meglio su Java. Il linguaggio intermedio agisce come un 'filtro semantico' che disambigua costrutti ambigui.
+Il path COBOL→C→C++→Java sfrutta lo stesso principio: COBOL e C condividono il paradigma procedurale e la gestione esplicita della memoria, C e C++ sono sintatticamente vicini, C++ e Java condividono concetti OOP."
 
-C++→Java via Rust: la traduzione diretta tende a copiare sintassi C++ (es. vector[i]) che non è valida in Java. Passando per Rust, la sintassi distinta forza l'LLM a riconoscere le differenze.
-Rust→Go via C++: entrambi i linguaggi supportano type inference, causando ambiguità sui tipi delle variabili locali. C++ con annotazioni di tipo esplicite (int w = ...) fornisce informazione che permette una traduzione corretta a Go.
-
-L'esempio COBOL→C→C++→Java che avete nella slide è interessante per il nostro contesto: COBOL ha semantiche molto distanti da Java, ma C è storicamente più vicino a COBOL (entrambi procedurali, gestione memoria esplicita), e C++ fornisce il ponte verso l'OOP di Java."
-
-[SLIDE 4 - Benchmark — CORREZIONE DEI DATI]
- Ecco i dati corretti dal paper, usando la metrica Computational Accuracy (CA) — la percentuale di traduzioni che producono output funzionalmente equivalenti al codice sorgente.
-Confronto INTERTRANS vs Direct Translation (CA@10)
-DatasetLLMDirect CA@10INTERTRANSImprovementCodeNetCode Llama34.6%60.8%+26.2% assolutoCodeNetMagicoder49.0%87.3%+38.3% assolutoCodeNetStarCoder241.0%84.4%+43.3% assolutoHumanEval-XMagicoder66.9%95.4%+28.6% assolutoTransCoderStarCoder273.2%93.8%+20.6% assoluto
+ **[Slide 5 : Benchmark]**
+Vediamo i risultati sperimentali. La metrica è Computational Accuracy (CA) — la percentuale di traduzioni che producono output funzionalmente equivalenti al codice sorgente, validati tramite test suite.
+Le comparazioni sono fatte confrontanto il caso il cui si traduca in modo diretto, e nel caso si utilizzi la tecnica di Intertrans.
+I risultati mostrano un improvement assoluto dal 18.3% al 43.3% rispetto alla traduzione diretta.
 Il best-performing è INTERTRANS con Magicoder, che raggiunge 87.3%-95.4% CA sui tre benchmark.
-Confronto con SOTA sul dataset TransCoder:
-ApproccioCA MediaTransCoder (unsupervised)36.2%TransCoder-IR (con LLVM IR)45.8%TransCoder-ST (con test automatici)52.2%GPT-3.586.0%UniTrans + GPT-3.587.9%INTERTRANS + StarCoder293.8%
-INTERTRANS supera tutti gli approcci esistenti, incluso UniTrans con GPT-3.5 che usa test case generation e program repair — funzionalità che INTERTRANS non richiede.
-Risultati dell'Ablation Study:
-Effetto di maxDepth:
-
-Da depth 1 (direct) a 2: +23.7% CA (Code Llama su HumanEval-X)
-Da depth 2 a 3: +6.6%
-Da depth 3 a 4: +3.2%
-
-I benefici maggiori si ottengono con 2-3 step intermedi; oltre depth 4, i miglioramenti diventano marginali e non statisticamente significativi.
-Effetto del numero di linguaggi intermedi:
-
-Da 0 a 1 linguaggio: +9.3% CA
-Da 1 a 2: +12.9%
-Da 2 a 3: +9.2%
-Da 3 a 4: +5.6%
-Da 4 a 5: +3.2%
-
-Come per maxDepth, i benefici maggiori si ottengono con 2-3 linguaggi intermedi.
-Quali linguaggi sono più importanti?
-L'heatmap nel paper mostra che l'impatto varia per coppia:
-
-Per C++→Java, rimuovere Rust causa -17.4% CA (statisticamente significativo)
-Per Python→Java, rimuovere Rust causa -17.4% CA
-Per Rust→Go, rimuovere C++ causa impatto significativo
-
-Non esiste un "best pivot language" universale — dipende dalla coppia sorgente-target."
-
-[CLOSING - Rilevanza per COBOL e Considerazioni Critiche]
-
-"Rilevanza per la migrazione COBOL:
-Il paper menziona esplicitamente il path COBOL→C→C++→Java come esempio. Questo è particolarmente interessante perché:
-
-COBOL e C condividono il paradigma procedurale e la gestione esplicita della memoria
-C e C++ sono sintatticamente vicini
-C++ e Java condividono concetti OOP
-
-INTERTRANS potrebbe essere applicato direttamente a migrazioni COBOL usando LLM multilingue, senza necessità di training specifico.
-Punti di forza:
-
-Nessun training richiesto — usa LLM off-the-shelf
-Improvement significativo (+18-43% CA assoluto)
-Approccio orthogonale a tecniche esistenti (può essere combinato con program repair, test generation)
-Open source: codice disponibile su GitHub
-
-Limitazioni:
-
-Costo computazionale: anche con ottimizzazioni, esplorare l'albero è costoso (multiple inference calls per traduzione)
-Dipendenza dalla test suite: richiede test per validare le traduzioni
-Non spiega perché certi path funzionano: il paper identifica pattern ma non fornisce una teoria predittiva
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
 
 ---
 ## 6. TOOL AUTOMATICI BASATI SU AI
