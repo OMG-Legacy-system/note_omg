@@ -14,4 +14,3 @@ Il codice generato deve essere ben documentato e commentato
 # Note
 
 https://www.scopus.com/pages/publications/84901191663?origin=resultslist
-https://www.scopus.com/pages/publications/85016133811?origin=resultslist
