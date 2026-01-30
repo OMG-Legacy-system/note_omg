@@ -27,3 +27,7 @@ TITLE-ABS-KEY ( ( "cobol" ) AND ( "migration" OR "legacy" OR "modernization" OR 
 
 ## Non accessibili
 ### [GenAI-Driven Migration of Legacy COBOL Applications to Clean Java Code](https://link.springer.com/chapter/10.1007/978-3-032-08614-3_4)
+
+---
+# Note
+Possiamo usare come keyword anche re-implementation per far riferimento alla riscrittura di codice senza usare wrapper o altre strategie temporanee
