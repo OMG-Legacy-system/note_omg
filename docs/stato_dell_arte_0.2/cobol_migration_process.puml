@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+
+rectangle "Source" as Source
+rectangle "Binary" as Binary
+rectangle "Reverse Engineering" as RE
+rectangle "Feature Extraction" as FE
+rectangle "Test Generation" as TG1
+rectangle "Migration" as MIG
+rectangle "Test Generation\n(on destination code)" as TG2
+
+Source --> FE
+Binary --> RE
+RE --> FE
+FE --> TG1
+TG1 --> MIG
+MIG --> TG2
+
