@@ -11,8 +11,7 @@ TITLE-ABS-KEY ( ( "cobol" ) AND ( "migration" OR "legacy" OR "modernization" OR 
 ### [Mining Association Rules from Code (MARC) to support legacy software management](https://www.scopus.com/pages/publications/85077041210?origin=resultslist)
 ### [Re-implementing a legacy system](https://www.scopus.com/pages/publications/85066271675?origin=resultslist)
 ### [COBOL systems migration to SOA: Assessing antipatterns and complexity](https://www.scopus.com/pages/publications/85064766311?origin=resultslist)
-### [A framework for legacy source code audit analytics](https://www.scopus.com/pages/publications/85070744305?origin=resultslist)
-### [Measuring the impact of the approach to migration in the quality of web service interfaces](https://www.scopus.com/pages/publications/84911058951?origin=resultslist)
+
 ### [Recovering management information from source code](https://www.scopus.com/pages/publications/84878877615?origin=resultslist)
 
 
@@ -27,6 +26,8 @@ TITLE-ABS-KEY ( ( "cobol" ) AND ( "migration" OR "legacy" OR "modernization" OR 
 
 ## Non accessibili
 ### [GenAI-Driven Migration of Legacy COBOL Applications to Clean Java Code](https://link.springer.com/chapter/10.1007/978-3-032-08614-3_4)
+### [A framework for legacy source code audit analytics](https://www.scopus.com/pages/publications/85070744305?origin=resultslist)
+### [Measuring the impact of the approach to migration in the quality of web service interfaces](https://www.scopus.com/pages/publications/84911058951?origin=resultslist)
 
 ---
 # Note
