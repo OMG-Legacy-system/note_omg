@@ -23,6 +23,10 @@ software management
 ### [Multi-language re-documentation to support a COBOL to Java migration project](https://ieeexplore.ieee.org/abstract/document/7884669)
 Re-documentation is a subarea of reverseengineering where the intent is to recover lost or non-existentdocumentation in from of a semantically equivalentrepresentation within the same abstraction level such as dataflow, data structure and control flow [7, 8]. These alternativeviews of the software can be generated automatically. Indeed, alot of tools [4, 8, 9] which generate such alternative views fromsource code of legacy systems are available today. Those toolswere successfully used for maintenance of legacy systems [4]as well as support of software migration following anautomatic transformation strategy [8] or manual reimplementation of a legacy system [9]. Also commercial toolssuch as COBOL FGM (www.proetcon.de) generatedependency graphs, data flow graphs, and metrics fromCOBOL source code.
 
+### [COBREX: A Tool for Extracting Business Rules from COBOL](https://ieeexplore.ieee.org/abstract/document/9978206)
+![alt text](./imgs/COBREX.png)
+Understanding the code that enforcesthe business rules is critical for system evolution. However,this is time-consuming, laborious, and error-prone. Also, thedocumentation of these systems is sometimes inadequate and maybe inconsistent with current organizational policies. Furthermore,the number of current-age developers working on COBOL hasbeen drastically reduced, and they are mainly unfamiliar withlegacy systems. To aid this, we propose a tool called COBREXto extract COBOL business rules using a CFG-based approach.The tool’s main aim is to help the researchers and practitionersto understand COBOL source code by extracting and comprehending the business rules. The demo of the tool can be foundhere - https://youtu.be/3QODmOkISL0 and the details of the toolcan be found here - https://rishalab.github.io/COBREXdoc/.
+
 ## Model Based
 
 
@@ -71,11 +75,60 @@ We present two controlled experiments conducted with master students and practit
 
 ### [COB2PY - A Non-AI, Rule-Based COBOL to Python Translator](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11186107&tag=1)
 
+### [An Holistic Approach to Migrate Industrial Legacy Systems](https://theses.hal.science/tel-04132315/)
+#### [Link al PDF](https://theses.hal.science/tel-04337686v2/preview/These_BRAGAGNOLO_Santiago.pdf#page=2)
+This project takes place in the context of a collaboration with BergerLevrault, a large software company providing several services and applications developed with different technologies. In a business-critical quest for technological
+unification, cost reduction, and access to new markets, Berger-Levrault started an
+extensive program of software modernisation.
+
+### [Discussion Paper: COBOL’s Migration to Modern Technology](https://www.researchgate.net/profile/Marc-Elvin-Cerezo/publication/391992097_Discussion_Paper_COBOL's_Migration_to_Modern_Technology/links/682ffb27026fee1034fa434a/Discussion-Paper-COBOLs-Migration-to-Modern-Technology.pdf)
+The discussion paper explores the
+possibility of migration of COBOL’s environment to more
+modern systems and programming languages, the struggles
+and the current situation of COBOL in the modern world. The
+background of COBOL will be briefly discussed, the findings
+from recent articles will also be discussed and the conclusion
+
+### [Incremental Core Transformation: A Modular First Approach to Legacy Modernization in Banking](https://www.researchgate.net/profile/Ashish-Gaurishankar-Vishwakarma/publication/395386767_Incremental_Core_Transformation_A_Modular_First_Approach_to_Legacy_Modernization_in_Banking/links/68c0d6b207fc6b0e2543b0e4/Incremental-Core-Transformation-A-Modular-First-Approach-to-Legacy-Modernization-in-Banking.pdf)
+
+
 ## Model Based
 ### [Legacy Modernization with AI - Mainframe modernization](https://arxiv.org/pdf/2512.05375)
 
+### [Generative AI-Driven Legacy System Modernization: Transforming Enterprise Infrastructure Through Automated Code Translation and Refactoring](https://al-kindipublishers.org/index.php/jcsts/article/view/9989)
+Legacy  systems  continue  to  form  the  operational  backbone  of  numerous  enterprises  despite  presenting  significant  challenges, including  scalabilityconstraints,  integration  limitations,  and  escalating  maintenance  costs.  Generative  artificial  intelligence, particularly  large  language  models  trained  on  extensive  code  repositories,  offers  unprecedented  capabilities  for  automating critical  aspects  of  legacy  system  modernization.  These  AI-driven  solutions  enable  automated  code  translation  between programming   languages,   comprehensive   documentation   generation,   test   case   creation,   and   intelligent   refactoring recommendations.  Real-world  implementations  across financial  services,  insurance,  and  government  sectors  demonstrate substantial  reductions  in  modernization  timelines  and  resource  requirements  while  maintaining  functional  integrity.  The technology  facilitates  the  transformation  of  monolithic  architectures into  modern  microservices,  bridges  skill  gaps  created  by retiring legacy experts, and enables continuous modernization rather than disruptive system replacements. However, successfulimplementation  requires  careful  consideration  of  model  hallucination  risks,  security  protocols,  and  organizational  readiness.  A phased  implementation  framework  combining  AI  capabilities  with  human  expertise  and  robust  governance  structures  emerges as the optimal path forward. This convergence of generative AI and legacy modernization represents a fundamental shift in how enterprises  approach  digital  transformation,  offering  a  more  efficient,  cost-effective,  and  sustainable  alternative  to  traditional modernization methodologies
+
+### [Modernizing Legacy Mainframe Applications to Java in the Cloud: A Full-Stack Testing, AI, and Data Migration Approach](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5779762)
+
+This paper presents a methodology integrating full-stack testing, test automation (AccelQ, Selenium), Python scripting, AI-driven validation (Watsonx), and ETL-based data migration validation (IBM DataStage, PowerBuilder). Led by Anirudh (Ani) Girey, it ensures high-quality migrations, preserves data integrity, and delivers measurable business value while enabling global team collaboration.
+
+### [Leveraging LLMs for Automated Translation of Legacy Code: A Case Study on PL/SQL to Java Transformation](https://www.scopus.com/pages/publications/105027178802?origin=resultslist)
+
+### [Translation of Low-Resource COBOL to Logically Correct and Readable Java leveraging High-Resource Java Refinement](https://www.scopus.com/pages/publications/85205912130?origin=resultslist)
+![alt text](./imgs/LLM-based%20aspect-specific%20sequential%20refinement%20workflow.png)
+To address these challenges,
+we propose an LLM-based workflow, leveraging temperature sampling and refinement-based strategies, to not only ensure logical
+correctness of the translation but also maximize the readability of
+the target Java code. We exploit the fact that, due to their extensive exposure to human-written Java codes during pre-training,
+the LLMs are more equipped with profound comprehension and
+capability for refining translated Java codes than COBOL to Java
+translation. 
 
 # Altro
+
+## Varie
+### [The Code Modernization Playbook](https://resources.anthropic.com/hubfs/Code%20Modernization%20Playbook.pdf)
+
+
+## Dataset e Benchmark
+### [X-COBOL: A Dataset of COBOL Repositories](https://arxiv.org/abs/2306.04892)
+### [OpenCBS: An Open-Source COBOL Defects Benchmark Suite](https://ieeexplore.ieee.org/abstract/document/9978243)
+
+### [CODEMENV: Benchmarking Large Language Models on Code Migration](https://aclanthology.org/2025.findings-acl.140.pdf)
+
+### [cobol-to-java-dataset](https://huggingface.co/datasets/Satya25/cobol-to-java-dataset)
+
+
 ## Re-Ingegnerizzazione
 ### [Agile model-driven re-engineering](https://www.scopus.com/pages/publications/85196291052?origin=resultslist)
 The objective is to support the reuse of business-critical functionality from such systems and the porting of legacy
@@ -83,6 +136,11 @@ code to modernised platforms, together with technical debt reduction to improve 
 its useful life. AMDRE uses a lightweight MDE process which involves the automated abstraction of software systems
 to UML specifications and the interactive application of refactoring and rearchitecting transformations to remove quality
 flaws and architectural flaws
+
+## Translation
+
+### [Cross-lingual Transfer in Programming Languages: An Extensive Empirical Study](https://arxiv.org/pdf/2310.16937)
+
 
 ## Refactoring
 
@@ -100,6 +158,7 @@ that should be useful for planning and executing future transformations.
 ### [Generating Test Suites to Validate Legacy Systems](https://d1wqtxts1xzle7.cloudfront.net/79358475/978-3-030-30690-8-libre.pdf?1642864565=&response-content-disposition=inline%3B+filename%3DSystem_Analysis_and_Modeling_Languages_M.pdf&Expires=1770119515&Signature=YtgKGXTs6lEAKhMT6GXdTXU0EoHvTwgvU8tRzNbipxlzRuvkmkBWufLEfRdoIns9Q~POBHSxFBzzK7mm6tMVL~vh8UrV5TG0RWZdJFvbnQNHcjtSPOiIJpZorulWXBp-2D986xKs3HnZUZbfDCue3sVhw4o-tKQO9T2RA9Fv8eTSdwv7jHg0XZ~H7pQH7iXrkUP5YKVJgo2W6guWJk90VfGr2JYRu0uhiZlOvuPM1q-LPVTsi7d4Yp6tl9B0PN~VKEqGvIr3VoISEob42XO8dqml8t0IQA73gIBTrkKd-pJo5cHXGu1yl77LS95ShFfC8UGBJioBjfdDNc3osGPF5w__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA#page=13)
 
 Da pagina 13, sono 267 pagine di volume
+
 
 # Scartati
 
