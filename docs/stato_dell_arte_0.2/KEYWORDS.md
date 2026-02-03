@@ -74,7 +74,7 @@ TITLE-ABS-KEY (
 ### [Generative AI-Driven Legacy System Modernization: Transforming Enterprise Infrastructure Through Automated Code Translation and Refactoring](https://al-kindipublishers.org/index.php/jcsts/article/view/9989)
 ### [Modernizing Legacy Mainframe Applications to Java in the Cloud: A Full-Stack Testing, AI, and Data Migration Approach](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5779762)
 
-## ```test code translation``` DA LEGGERE
+## ```test code translation```
 
 ### [Automatically Testing Functional Properties of Code Translation Models](https://ojs.aaai.org/index.php/AAAI/article/view/30097)
 ### [GlueTest: Testing Code Translation via Language Interoperability](https://ieeexplore.ieee.org/abstract/document/10794998)

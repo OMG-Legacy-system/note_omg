@@ -128,6 +128,9 @@ translation.
 
 ### [cobol-to-java-dataset](https://huggingface.co/datasets/Satya25/cobol-to-java-dataset)
 
+### [On the Evaluation of Neural Code Translation: Taxonomy and Benchmark](https://ieeexplore.ieee.org/abstract/document/10298408)
+In recent years, neural code translation has gainedincreasing attention. While most of the research focuses onimproving model architectures and training processes, we noticethat the evaluation process and benchmark for code translationmodels are severely limited: they primarily treat source codeas natural languages and provide a holistic accuracy scorewhile disregarding the full spectrum of model capabilities acrossdifferent translation types and complexity. In this paper, wepresent a comprehensive investigation of four state-of-the-artmodels and analyze in-depth the advantages and limitations ofthree existing benchmarks. Based on the empirical results, wedevelop a taxonomy that categorizes code translation tasks intofour primary types according to their complexity and knowledgedependence: token level (type 1), syntactic level (type 2), librarylevel (type 3), and algorithm level (type 4). We then conduct athorough analysis of how existing approaches perform acrossthese four categories
+
 
 ## Re-Ingegnerizzazione
 ### [Agile model-driven re-engineering](https://www.scopus.com/pages/publications/85196291052?origin=resultslist)
@@ -159,6 +162,9 @@ that should be useful for planning and executing future transformations.
 
 Da pagina 13, sono 267 pagine di volume
 
+### [Automatically Testing Functional Properties of Code Translation Models](https://ojs.aaai.org/index.php/AAAI/article/view/30097)
+In this paper, we automatically testfunctional properties of code translation models themselves. To this end, we extend NOMOS (Christakis et al.2023), an open-source framework for expressing functionalcorrectness properties of machine learning models and automatically testing models against these properties. In particular, NOMOS uses a declarative, domain-agnostic specification language for writing hyperproperties (Clarkson andSchneider 2008) (or k-safety properties), which capturefunctional correctness by reasoning about k model executions. As an example, consider a recidivism-risk model predicting whether a criminal is likely to re-offend. The property that “if a criminal’s number of priors increases, thentheir recidivism risk should not decrease” is a 2-safety property—we need two model executions to detect a violation ofthis property, both of which take as input the same criminal but one with an increased number of priors. NOMOS hasbeen used to effectively test models from various applicationdomains, namely action policies as well as models that takeas input tabular data, images, speech, and natural language.
+
 
 # Scartati
 
@@ -175,3 +181,7 @@ of redirecting the request of input/output operations to the
 legacy system by using screen and database proxies. The
 approach has been applied successfully to Cobol software
 systems with a character-based user interface.
+
+
+### [GlueTest: Testing Code Translation via Language Interoperability](https://ieeexplore.ieee.org/abstract/document/10794998)
+Da vedere quanto è utile, uscito sulla ricerca perché cita uno degli articoli considerati sopra
