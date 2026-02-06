@@ -27,11 +27,14 @@ Re-documentation is a subarea of reverseengineering where the intent is to recov
 ![alt text](./imgs/COBREX.png)
 Understanding the code that enforcesthe business rules is critical for system evolution. However,this is time-consuming, laborious, and error-prone. Also, thedocumentation of these systems is sometimes inadequate and maybe inconsistent with current organizational policies. Furthermore,the number of current-age developers working on COBOL hasbeen drastically reduced, and they are mainly unfamiliar withlegacy systems. To aid this, we propose a tool called COBREXto extract COBOL business rules using a CFG-based approach.The tool’s main aim is to help the researchers and practitionersto understand COBOL source code by extracting and comprehending the business rules. The demo of the tool can be foundhere - https://youtu.be/3QODmOkISL0 and the details of the toolcan be found here - https://rishalab.github.io/COBREXdoc/.
 
-## Model Based
+## Model Driven
 
 
 ### [AI-Native Modernization: Agentic Knowledge Extraction and Code Re-Engineering to Accelerate Developer-Led Transformation](https://www.techrxiv.org/doi/full/10.36227/techrxiv.176425530.08389898)
 This paper presents an AI-agent–driven modernizationframework in which cooperating agents continuously minelegacy assets—including COBOL, JCL, SQL, andPL/SQL—extract business rules and data flows, andorganize them into domain concepts that architects anddevelopers can act on. The agents recommendmicroservice-oriented decompositions and targetarchitectures, generate coding scaffolds with validationand resilience patterns, and auto-create unit and end-to-endtest cases from the discovered logic. An AI ModernizationCo-Pilot provides a conversational workspace where teamscan query this knowledge, request designs, and generatecode and tests during migration and data conversion. Byshifting modernization from ad-hoc SME-driven discoveryto a knowledge-centric, agentic process, the frameworkreduces dependency on individual experts, acceleratesdelivery, and improves the consistency and quality oflarge-scale modernization programs.
+
+### [Enhancing COBOL Code Explanations: A Multi-Agents Approach Using Large Language Models](https://arxiv.org/abs/2507.02182)
+Common Business Oriented Language (COBOL) is a programminglanguage used to develop business applications that are widelyadopted by financial, business, and government agencies. Due toits age, complexity, and declining number of COBOL developers,maintaining COBOL codebases is becoming increasingly challenging. In particular, the lack of documentation makes it difficult fornew developers to effectively understand and maintain COBOLsystems. Existing research utilizes large language models (LLMs)to explain the functionality of code snippets. However, COBOLpresents unique challenges due to its architectural and syntacticaldifferences, which often cause its code to exceed the token windowsize of LLMs. In this work, we propose a multi-agent approachthat leverages two LLM-based agents working collaboratively togenerate explanations for functions, files, and the overall project.These agents incorporate together by utilizing contextual information from the codebase into the code explanation prompts. Weevaluate the effectiveness of our approach using 14 open-source,real-world COBOL projects. Our results indicate that our approachperforms significantly better than the baseline in function codeexplanation, with improvements of 12.67%, 18.59%, and 0.62% interms of METEOR, chrF, and SentenceBERT scores, respectively.At the file level, our approach effectively explains both short andlong COBOL files that exceed the token window size of LLMs andsurpass the baseline by 4.21%, 10.72%, and 14.68% in explaining thepurpose, functionality, and clarity of the generated explanation. Atthe project level, our approach generates explanations that conveythe functionality and purpose of 82% of the selected projects.
 
 # Migration Strategies and Methods
 ## Non Model-Based
@@ -114,13 +117,16 @@ the LLMs are more equipped with profound comprehension and
 capability for refining translated Java codes than COBOL to Java
 translation. 
 
+### [Code Reborn AI-Driven Legacy Systems Modernization from COBOL to Java](https://arxiv.org/abs/2504.11335)
+Articolo presente nella prima presentazione
+
 # Altro
 
 ## Varie
 ### [The Code Modernization Playbook](https://resources.anthropic.com/hubfs/Code%20Modernization%20Playbook.pdf)
 
 
-## Dataset e Benchmark
+## Dataset, Benchmark e Test
 ### [X-COBOL: A Dataset of COBOL Repositories](https://arxiv.org/abs/2306.04892)
 ### [OpenCBS: An Open-Source COBOL Defects Benchmark Suite](https://ieeexplore.ieee.org/abstract/document/9978243)
 
@@ -132,6 +138,24 @@ translation.
 In recent years, neural code translation has gainedincreasing attention. While most of the research focuses onimproving model architectures and training processes, we noticethat the evaluation process and benchmark for code translationmodels are severely limited: they primarily treat source codeas natural languages and provide a holistic accuracy scorewhile disregarding the full spectrum of model capabilities acrossdifferent translation types and complexity. In this paper, wepresent a comprehensive investigation of four state-of-the-artmodels and analyze in-depth the advantages and limitations ofthree existing benchmarks. Based on the empirical results, wedevelop a taxonomy that categorizes code translation tasks intofour primary types according to their complexity and knowledgedependence: token level (type 1), syntactic level (type 2), librarylevel (type 3), and algorithm level (type 4). We then conduct athorough analysis of how existing approaches perform acrossthese four categories
 
 
+### [Generating Test Suites to Validate Legacy Systems](https://d1wqtxts1xzle7.cloudfront.net/79358475/978-3-030-30690-8-libre.pdf?1642864565=&response-content-disposition=inline%3B+filename%3DSystem_Analysis_and_Modeling_Languages_M.pdf&Expires=1770119515&Signature=YtgKGXTs6lEAKhMT6GXdTXU0EoHvTwgvU8tRzNbipxlzRuvkmkBWufLEfRdoIns9Q~POBHSxFBzzK7mm6tMVL~vh8UrV5TG0RWZdJFvbnQNHcjtSPOiIJpZorulWXBp-2D986xKs3HnZUZbfDCue3sVhw4o-tKQO9T2RA9Fv8eTSdwv7jHg0XZ~H7pQH7iXrkUP5YKVJgo2W6guWJk90VfGr2JYRu0uhiZlOvuPM1q-LPVTsi7d4Yp6tl9B0PN~VKEqGvIr3VoISEob42XO8dqml8t0IQA73gIBTrkKd-pJo5cHXGu1yl77LS95ShFfC8UGBJioBjfdDNc3osGPF5w__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA#page=13)
+
+Da pagina 13, sono 267 pagine di volume
+
+### [Automatically Testing Functional Properties of Code Translation Models](https://ojs.aaai.org/index.php/AAAI/article/view/30097)
+In this paper, we automatically testfunctional properties of code translation models themselves. To this end, we extend NOMOS (Christakis et al.2023), an open-source framework for expressing functionalcorrectness properties of machine learning models and automatically testing models against these properties. In particular, NOMOS uses a declarative, domain-agnostic specification language for writing hyperproperties (Clarkson andSchneider 2008) (or k-safety properties), which capturefunctional correctness by reasoning about k model executions. As an example, consider a recidivism-risk model predicting whether a criminal is likely to re-offend. The property that “if a criminal’s number of priors increases, thentheir recidivism risk should not decrease” is a 2-safety property—we need two model executions to detect a violation ofthis property, both of which take as input the same criminal but one with an increased number of priors. NOMOS hasbeen used to effectively test models from various applicationdomains, namely action policies as well as models that takeas input tabular data, images, speech, and natural language.
+
+### [Quality Evaluation of COBOL to Java Code Transformation](https://arxiv.org/abs/2507.23356)
+We present an automated evaluation system forassessing COBOL-to-Java code translation within IBM’s watsonxCode Assistant for Z (WCA4Z). The system addresses keychallenges in evaluating LLM-based translators, including modelopacity and the complexity of translation quality assessment.Our approach combines analytic checkers with LLM-as-a-judge(LaaJ) techniques to deliver scalable, multi-faceted evaluations.The system supports continuous integration workflows, enableslarge-scale benchmarking, and reduces reliance on manual review. We describe the system architecture, evaluation strategies,and reporting mechanisms that provide actionable insights fordevelopers and project managers, facilitating the evolution ofhigh-quality, modernized codebases.
+
+### [Automated Validation of COBOL to Java Transformation](https://dl.acm.org/doi/abs/10.1145/3691620.3695365)
+Questa stava anche nella prima presentazione
+
+### [XTest: A Parallel Multilingual Corpus with Test Cases for Code Translation and Its Evaluation](https://ieeexplore.ieee.org/abstract/document/10055851)
+This paper introduces XTest: A ParallelMultilingual Corpus with Test Cases for Code Translation. Ourdataset contains parallel programs in 9 languages, Problemstatement and test cases. Also in this work, we have built 30systems to translate code between some high-resourced(C++,Python, etc) and low-resourced (Go, Ruby, etc) programminglanguages
+![X test casi supportati](./imgs/XTest.png)
+
+
 ## Re-Ingegnerizzazione
 ### [Agile model-driven re-engineering](https://www.scopus.com/pages/publications/85196291052?origin=resultslist)
 The objective is to support the reuse of business-critical functionality from such systems and the porting of legacy
@@ -139,6 +163,11 @@ code to modernised platforms, together with technical debt reduction to improve 
 its useful life. AMDRE uses a lightweight MDE process which involves the automated abstraction of software systems
 to UML specifications and the interactive application of refactoring and rearchitecting transformations to remove quality
 flaws and architectural flaws
+
+### [COBOL Systems Migration to SOA: Assessing Antipatterns and Complexity](https://www.itc.ktu.lt/index.php/ITC/article/view/21566)
+
+### [Evaluating perturbation robustness of generative systems that use COBOL code inputs](https://arxiv.org/abs/2511.18488)
+Systems incorporating large language models (LLMs) as a component are known to be sensitive (i.e., non-robust) to minor inputvariations that do not change the meaning of the input; such sensitivity may reduce the system’s usefulness. Here, we present aframework to evaluate robustness of systems using COBOL code asinput; our application is translation between COBOL and Java programming languages, but the approach extends to other tasks suchas code generation or explanation. Targeting robustness of systemswith COBOL as input is essential yet challenging. Many businesscritical applications are written in COBOL, yet these are typicallyproprietary legacy applications and their code is unavailable toLLMs for training. We develop a library of COBOL paragraph andfull-program perturbation methods, and create variant-expandedversions of a benchmark dataset of examples for a specific task.The robustness of the LLM-based system is evaluated by measuringchanges in values of individual and aggregate metrics calculated onthe system’s outputs. Finally, we present a series of dynamic tableand chart visualization dashboards that assist in debugging the system’s outputs, and monitoring and understanding root causes of thesystem’s sensitivity to input variation. These tools can be furtherused to improve the system by, for instance, indicating variationsthat should be handled by pre-processing steps.
 
 ## Translation
 
@@ -157,14 +186,6 @@ This paper looks at three different cases of automated code
 transformation at different stages of their lifecycle, highlights
 the lessons learned and derives a number of recommendations
 that should be useful for planning and executing future transformations.
-
-### [Generating Test Suites to Validate Legacy Systems](https://d1wqtxts1xzle7.cloudfront.net/79358475/978-3-030-30690-8-libre.pdf?1642864565=&response-content-disposition=inline%3B+filename%3DSystem_Analysis_and_Modeling_Languages_M.pdf&Expires=1770119515&Signature=YtgKGXTs6lEAKhMT6GXdTXU0EoHvTwgvU8tRzNbipxlzRuvkmkBWufLEfRdoIns9Q~POBHSxFBzzK7mm6tMVL~vh8UrV5TG0RWZdJFvbnQNHcjtSPOiIJpZorulWXBp-2D986xKs3HnZUZbfDCue3sVhw4o-tKQO9T2RA9Fv8eTSdwv7jHg0XZ~H7pQH7iXrkUP5YKVJgo2W6guWJk90VfGr2JYRu0uhiZlOvuPM1q-LPVTsi7d4Yp6tl9B0PN~VKEqGvIr3VoISEob42XO8dqml8t0IQA73gIBTrkKd-pJo5cHXGu1yl77LS95ShFfC8UGBJioBjfdDNc3osGPF5w__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA#page=13)
-
-Da pagina 13, sono 267 pagine di volume
-
-### [Automatically Testing Functional Properties of Code Translation Models](https://ojs.aaai.org/index.php/AAAI/article/view/30097)
-In this paper, we automatically testfunctional properties of code translation models themselves. To this end, we extend NOMOS (Christakis et al.2023), an open-source framework for expressing functionalcorrectness properties of machine learning models and automatically testing models against these properties. In particular, NOMOS uses a declarative, domain-agnostic specification language for writing hyperproperties (Clarkson andSchneider 2008) (or k-safety properties), which capturefunctional correctness by reasoning about k model executions. As an example, consider a recidivism-risk model predicting whether a criminal is likely to re-offend. The property that “if a criminal’s number of priors increases, thentheir recidivism risk should not decrease” is a 2-safety property—we need two model executions to detect a violation ofthis property, both of which take as input the same criminal but one with an increased number of priors. NOMOS hasbeen used to effectively test models from various applicationdomains, namely action policies as well as models that takeas input tabular data, images, speech, and natural language.
-
 
 # Scartati
 

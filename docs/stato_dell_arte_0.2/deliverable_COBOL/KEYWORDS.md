@@ -12,8 +12,6 @@ TITLE-ABS-KEY ( ( "cobol" ) AND ( "migration" OR "legacy" OR "modernization" OR 
 ### [Re-implementing a legacy system](https://www.scopus.com/pages/publications/85066271675?origin=resultslist)
 ### [COBOL systems migration to SOA: Assessing antipatterns and complexity](https://www.scopus.com/pages/publications/85064766311?origin=resultslist)
 
-### [Recovering management information from source code](https://www.scopus.com/pages/publications/84878877615?origin=resultslist)
-
 ```
 TITLE-ABS-KEY ( 
     (
@@ -81,7 +79,7 @@ TITLE-ABS-KEY (
 ### [On the Evaluation of Neural Code Translation: Taxonomy and Benchmark](https://ieeexplore.ieee.org/abstract/document/10298408)
 
 
-## ```COBOL to java dataset``` DA LEGGERE
+## ```COBOL to java dataset```
 
 ### [Quality Evaluation of COBOL to Java Code Transformation](https://arxiv.org/abs/2507.23356)
 ### [Automated Validation of COBOL to Java Transformation](https://dl.acm.org/doi/abs/10.1145/3691620.3695365)
