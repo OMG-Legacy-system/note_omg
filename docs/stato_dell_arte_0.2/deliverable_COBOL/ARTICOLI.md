@@ -120,6 +120,12 @@ translation.
 ### [Code Reborn AI-Driven Legacy Systems Modernization from COBOL to Java](https://arxiv.org/abs/2504.11335)
 Articolo presente nella prima presentazione
 
+### [COBOL Migration to Java or C#/.NET](https://www.semanticdesigns.com/Products/Services/COBOLMigration.html?Google=COBOL&gad_source=1&gad_campaignid=970590&gclid=CjwKCAiA1obMBhAbEiwAsUBbIoYGjiIGLMcHzPQxsTZe5A-4FIQPTfyk1rmLcoqob4PWnW6vA-xLchoCjBgQAvD_BwE)
+Semantic Designs translators parse the original code with tools that have the same understanding as the original compilers; (for example, see our COBOL Front End). SD tools know the types of variables, where and how they are used ("the context"), and can thus produce extremely good translations. Because SD also customizes the tools to the specific needs of the customer, the code reflects those needs properly.
+
+### [Transforming COBOL to Java by using generative AI](https://www.ibm.com/docs/en/watsonx/watsonx-code-assistant-4z/1.x?topic=transform-transforming-cobol-java-by-using-generative-ai)
+Guida per Wastonix Code assistant for Z
+
 # Altro
 
 ## Varie
@@ -154,6 +160,16 @@ Questa stava anche nella prima presentazione
 ### [XTest: A Parallel Multilingual Corpus with Test Cases for Code Translation and Its Evaluation](https://ieeexplore.ieee.org/abstract/document/10055851)
 This paper introduces XTest: A ParallelMultilingual Corpus with Test Cases for Code Translation. Ourdataset contains parallel programs in 9 languages, Problemstatement and test cases. Also in this work, we have built 30systems to translate code between some high-resourced(C++,Python, etc) and low-resourced (Go, Ruby, etc) programminglanguages
 ![X test casi supportati](./imgs/XTest.png)
+
+### [COBOL to Java and newspapers still get delivered](https://www.scopus.com/pages/publications/85058280869?origin=resultslist)
+Thispaper explains the process that was employed to test functionalequivalence between the legacy and modernized applications, themain testing challenges, and lessons learned after having operatedand maintained the modernized application in production overthe last eight months. The goal of delivering a functionallyequivalent system was achieved, but problems remained to besolved related to new feature development, business domainknowledge transfer, and recruiting new software engineers towork on the modernized application
+
+#### Dataset Github e Huggingface
+### [sidharthsingh1892/cobol_to_java_instruct_data](https://huggingface.co/datasets/sidharthsingh1892/cobol_to_java_instruct_data)
+### [sidharthsingh1892/cobol_to_java_train_utf](https://huggingface.co/datasets/sidharthsingh1892/cobol_to_java_train_utf)
+### [COBOLGen](https://github.com/sentientsergio/COBOLGen)
+### [che-che4z-lsp-for-cobol](https://github.com/eclipse-che4z/che-che4z-lsp-for-cobol)
+### [COBOL-to-Java-Conversion-Samples](https://github.com/Ispirer/COBOL-to-Java-Conversion-Samples)
 
 
 ## Re-Ingegnerizzazione

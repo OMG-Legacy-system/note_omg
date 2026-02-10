@@ -35,6 +35,17 @@ TITLE-ABS-KEY (
 
 ### [Translation of Low-Resource COBOL to Logically Correct and Readable Java leveraging High-Resource Java Refinement](https://www.scopus.com/pages/publications/85205912130?origin=resultslist)
 
+```
+TITLE-ABS-KEY ( 
+    (
+        "to Java"
+    ) AND (
+        "migration" OR "translation"
+    )
+ )
+```
+### [COBOL to Java and newspapers still get delivered](https://www.scopus.com/pages/publications/85058280869?origin=resultslist)
+
 # Scholar
 ## ``` migration cobol legacy code```
 
@@ -88,12 +99,16 @@ TITLE-ABS-KEY (
 ### [Enhancing COBOL Code Explanations: A Multi-Agents Approach Using Large Language Models](https://arxiv.org/abs/2507.02182)
 ### [Code Reborn AI-Driven Legacy Systems Modernization from COBOL to Java](https://arxiv.org/abs/2504.11335)
 
-# Google DA LEGGERE
+## ```legacy code migration to java``` DA LEGGERE
+### [Migration of Legacy Information Systems](https://link.springer.com/chapter/10.1007/978-3-540-76440-3_6)
+
+
+# Google
 
 ## ```Cobol to java translation dataset```
 ### [COBOL Migration to Java or C#/.NET](https://www.semanticdesigns.com/Products/Services/COBOLMigration.html?Google=COBOL&gad_source=1&gad_campaignid=970590&gclid=CjwKCAiA1obMBhAbEiwAsUBbIoYGjiIGLMcHzPQxsTZe5A-4FIQPTfyk1rmLcoqob4PWnW6vA-xLchoCjBgQAvD_BwE)
 
-# Altro DA LEGGERE
+# Altro
 ### [The Code Modernization Playbook](https://resources.anthropic.com/hubfs/Code%20Modernization%20Playbook.pdf)
 ### [Transforming COBOL to Java by using generative AI](https://www.ibm.com/docs/en/watsonx/watsonx-code-assistant-4z/1.x?topic=transform-transforming-cobol-java-by-using-generative-ai)
 
@@ -109,7 +124,7 @@ TITLE-ABS-KEY (
 ### [GenAI-Driven Migration of Legacy COBOL Applications to Clean Java Code](https://link.springer.com/chapter/10.1007/978-3-032-08614-3_4)
 ### [A framework for legacy source code audit analytics](https://www.scopus.com/pages/publications/85070744305?origin=resultslist)
 ### [Measuring the impact of the approach to migration in the quality of web service interfaces](https://www.scopus.com/pages/publications/84911058951?origin=resultslist)
-## [Generation of multipurpose formal models from legacy code](https://pp.isofts.kiev.ua/ojs1/article/view/505) 
+### [Generation of multipurpose formal models from legacy code](https://pp.isofts.kiev.ua/ojs1/article/view/505) 
 
 ## Accesso da verificare
 ### [Generating Test Suites to Validate Legacy Systems](https://d1wqtxts1xzle7.cloudfront.net/79358475/978-3-030-30690-8-libre.pdf?1642864565=&response-content-disposition=inline%3B+filename%3DSystem_Analysis_and_Modeling_Languages_M.pdf&Expires=1770119515&Signature=YtgKGXTs6lEAKhMT6GXdTXU0EoHvTwgvU8tRzNbipxlzRuvkmkBWufLEfRdoIns9Q~POBHSxFBzzK7mm6tMVL~vh8UrV5TG0RWZdJFvbnQNHcjtSPOiIJpZorulWXBp-2D986xKs3HnZUZbfDCue3sVhw4o-tKQO9T2RA9Fv8eTSdwv7jHg0XZ~H7pQH7iXrkUP5YKVJgo2W6guWJk90VfGr2JYRu0uhiZlOvuPM1q-LPVTsi7d4Yp6tl9B0PN~VKEqGvIr3VoISEob42XO8dqml8t0IQA73gIBTrkKd-pJo5cHXGu1yl77LS95ShFfC8UGBJioBjfdDNc3osGPF5w__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA#page=13)
