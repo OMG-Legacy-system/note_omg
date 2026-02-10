@@ -99,9 +99,6 @@ TITLE-ABS-KEY (
 ### [Enhancing COBOL Code Explanations: A Multi-Agents Approach Using Large Language Models](https://arxiv.org/abs/2507.02182)
 ### [Code Reborn AI-Driven Legacy Systems Modernization from COBOL to Java](https://arxiv.org/abs/2504.11335)
 
-## ```legacy code migration to java``` DA LEGGERE
-### [Migration of Legacy Information Systems](https://link.springer.com/chapter/10.1007/978-3-540-76440-3_6)
-
 
 # Google
 
@@ -125,6 +122,8 @@ TITLE-ABS-KEY (
 ### [A framework for legacy source code audit analytics](https://www.scopus.com/pages/publications/85070744305?origin=resultslist)
 ### [Measuring the impact of the approach to migration in the quality of web service interfaces](https://www.scopus.com/pages/publications/84911058951?origin=resultslist)
 ### [Generation of multipurpose formal models from legacy code](https://pp.isofts.kiev.ua/ojs1/article/view/505) 
+### [Migration of Legacy Information Systems](https://link.springer.com/chapter/10.1007/978-3-540-76440-3_6)
+
 
 ## Accesso da verificare
 ### [Generating Test Suites to Validate Legacy Systems](https://d1wqtxts1xzle7.cloudfront.net/79358475/978-3-030-30690-8-libre.pdf?1642864565=&response-content-disposition=inline%3B+filename%3DSystem_Analysis_and_Modeling_Languages_M.pdf&Expires=1770119515&Signature=YtgKGXTs6lEAKhMT6GXdTXU0EoHvTwgvU8tRzNbipxlzRuvkmkBWufLEfRdoIns9Q~POBHSxFBzzK7mm6tMVL~vh8UrV5TG0RWZdJFvbnQNHcjtSPOiIJpZorulWXBp-2D986xKs3HnZUZbfDCue3sVhw4o-tKQO9T2RA9Fv8eTSdwv7jHg0XZ~H7pQH7iXrkUP5YKVJgo2W6guWJk90VfGr2JYRu0uhiZlOvuPM1q-LPVTsi7d4Yp6tl9B0PN~VKEqGvIr3VoISEob42XO8dqml8t0IQA73gIBTrkKd-pJo5cHXGu1yl77LS95ShFfC8UGBJioBjfdDNc3osGPF5w__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA#page=13)

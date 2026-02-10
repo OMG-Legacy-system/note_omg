@@ -18,6 +18,11 @@ TITLE-ABS-KEY (
 ### [The Exception Handling in Automatic Translation of Goto from PROMELA Model to Java Program](https://www.scopus.com/pages/publications/85116036936?origin=resultslist)
 ### [From CIL to Java bytecode: Semantics-based translation for static analysis leveraging](https://www.scopus.com/pages/publications/85078878251?origin=resultslist)
 ### [Developing a model-driven reengineering approach for migrating PL/SQL triggers to Java: A practical experience](https://www.scopus.com/pages/publications/85061007557?origin=resultslist)
+### [Model-driven software migration: Process model, tool support, and application](https://www.scopus.com/pages/publications/84898379055?origin=resultslist)
+### [Migrating legacy data structures based on variable overlay to Java](https://www.scopus.com/pages/publications/77950140887?origin=resultslist)
+### [Data model reverse engineering in migrating a legacy system to Java](https://www.scopus.com/pages/publications/57749194202?origin=resultslist)
+### [Correct by construction approach for translation of stored procedures to Java code](https://www.scopus.com/pages/publications/85123042034?origin=resultslist)
+
 
 # Scholar
 

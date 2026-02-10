@@ -12,9 +12,9 @@ find . -type d | while read -r dir; do
 
     if [[ -f "$keyword_file" ]]; then
 
-        num_papers=$(cat "$keyword_file" | grep "###" | wc -l)
+        num_papers=$(grep "###" "$keyword_file" | grep -v "\[\]()" | wc -l)
 
-        echo -e "\033[35mTrovati $num_papers papers per $keyword_file\033[0m"
+        echo -e "\033[35mTrovati $num_papers articoli per $keyword_file\033[0m"
         echo -e "\033[35mPaper non esaminati:\033[0m"
 
         echo
