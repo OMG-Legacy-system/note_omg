@@ -116,6 +116,9 @@ TITLE-ABS-KEY (
 ### [che-che4z-lsp-for-cobol](https://github.com/eclipse-che4z/che-che4z-lsp-for-cobol)
 ### [COBOL-to-Java-Conversion-Samples](https://github.com/Ispirer/COBOL-to-Java-Conversion-Samples)
 
+## ```legacy code migration to java```
+### [Developing legacy system migration methods and tools for technology transfer](https://onlinelibrary.wiley.com/doi/epdf/10.1002/spe.870)
+
 ## Non accessibili
 ## ```Da vedere con https://sci-hub.mk```
 ### [GenAI-Driven Migration of Legacy COBOL Applications to Clean Java Code](https://link.springer.com/chapter/10.1007/978-3-032-08614-3_4)

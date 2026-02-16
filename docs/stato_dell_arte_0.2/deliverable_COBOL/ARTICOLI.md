@@ -94,6 +94,8 @@ from recent articles will also be discussed and the conclusion
 
 ### [Incremental Core Transformation: A Modular First Approach to Legacy Modernization in Banking](https://www.researchgate.net/profile/Ashish-Gaurishankar-Vishwakarma/publication/395386767_Incremental_Core_Transformation_A_Modular_First_Approach_to_Legacy_Modernization_in_Banking/links/68c0d6b207fc6b0e2543b0e4/Incremental-Core-Transformation-A-Modular-First-Approach-to-Legacy-Modernization-in-Banking.pdf)
 
+### [Developing legacy system migration methods and tools for technology transfer](https://onlinelibrary.wiley.com/doi/epdf/10.1002/spe.870)
+This paper presents the research results of an ongoing technology transfer project carried out in coopera-tion between the University of Salerno and a small software company. The project is aimed at developingand transferring migration technology to the industrial partner. The partner should be enabled to migratemonolithic multi-user COBOL legacy systems to a multi-tier Web-based architecture
 
 ## Model Based
 ### [Legacy Modernization with AI - Mainframe modernization](https://arxiv.org/pdf/2512.05375)

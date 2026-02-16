@@ -47,6 +47,14 @@ find . -type d | while read -r dir; do
                 echo -e "${PARENT_DIR}$dir${RESET}: ${GREEN}OK${RESET}"
             fi
 
+            used_papers=$(grep "###" "$articoli_file" | grep -v "\[\]()" | wc -l)
+
+            echo
+            echo -e "\033[35mUtilizzati $used_papers articoli per $articoli_file\033[0m"
+            echo
+            echo
+
+
         fi
     fi
 done
