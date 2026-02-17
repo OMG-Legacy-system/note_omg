@@ -52,7 +52,7 @@ TITLE-ABS-KEY (
 ### [A Systematic Literature Review on Neural Code Translation](https://arxiv.org/pdf/2505.07425)
 ### [Advancing Automated In-Isolation Validation in Repository-Level Code Translation](https://arxiv.org/abs/2511.21878)
 
-#Prompting Search
+# Prompting Search
 ### [Leveraging LLMs for Automated Translation of Legacy Code: A Case Study on PL/SQL to Java Transformation](https://arxiv.org/abs/2508.19663)
 ### [opensourcecobol4j](https://github.com/opensourcecobol/opensourcecobol4j)
 ### [cobol2java](https://github.com/sergioag/cobol2java/tree/master)
