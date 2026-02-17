@@ -52,6 +52,16 @@ TITLE-ABS-KEY (
 ### [A Systematic Literature Review on Neural Code Translation](https://arxiv.org/pdf/2505.07425)
 ### [Advancing Automated In-Isolation Validation in Repository-Level Code Translation](https://arxiv.org/abs/2511.21878)
 
+#Prompting Search
+### [Leveraging LLMs for Automated Translation of Legacy Code: A Case Study on PL/SQL to Java Transformation](https://arxiv.org/abs/2508.19663)
+### [opensourcecobol4j](https://github.com/opensourcecobol/opensourcecobol4j)
+### [cobol2java](https://github.com/sergioag/cobol2java/tree/master)
+### [Automated Testing of COBOL to Java Transformation](https://arxiv.org/abs/2504.10548)
+### [Quality Evaluation of COBOL to Java Code Transformation](https://arxiv.org/abs/2507.23356)
+
+
+
+
 # Non accessibili
 ### [A Storytest-Driven Approach to the Migration of Legacy Systems](https://link.springer.com/chapter/10.1007/978-3-642-01853-4_19)
 ### [The State of Smalltalk to Java Transformation: Approaches Review](https://www.scopus.com/pages/publications/85194238222?origin=resultslist)
