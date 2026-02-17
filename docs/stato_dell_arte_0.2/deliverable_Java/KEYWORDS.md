@@ -42,7 +42,6 @@ TITLE-ABS-KEY (
 ### [Mutation analysis for evaluating code translation](https://link.springer.com/article/10.1007/s10664-023-10385-w)
 ### [Better Together? An Evaluation of AI-Supported Code Translation](https://dl.acm.org/doi/pdf/10.1145/3490099.3511157)
 <!-- Da leggere -->
-### [https://ieeexplore.ieee.org/abstract/document/4288195]()
 ### [Systematic Testing of Model-Based Code Generators](https://ieeexplore.ieee.org/abstract/document/4288195) <!-- sistema di test per i modelli -->
 ### [An interpretable error correction method for enhancing code-to-code translation](https://openreview.net/forum?id=fVxIEHGnVT)
 ### [MatchFixAgent: Language-Agnostic Autonomous Repository-Level Code Translation Validation and Repair](https://arxiv.org/abs/2509.16187)
