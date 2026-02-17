@@ -6,7 +6,14 @@ Central to any legacy migration project is the translationof the data model. Dec
 
 
 # Migration
+## Compilator
+### [opensourcecobol4j](https://github.com/opensourcecobol/opensourcecobol4j)
+
+### [cobol2java](https://github.com/sergioag/cobol2java/tree/master)
+
+
 ## Non Model Driven
+
 ### [Software Evolution of Legacy Systems](https://eprints.staffs.ac.uk/2770/1/ICEIS_2016_Volume_1.pdf#page=434)
 we describe a case study of an actual platform
 migration, along with pitfalls and lessons learned. This paper thus aims to give software practitioners—both
@@ -46,6 +53,21 @@ we further propose UniTrans, a Unified code Translation framework,applicable to 
 The VT legacy system, comprising approximately 2.5 million lines of PL/SQL code, lacks consistent documentation and automated tests, posing significant challenges for refactoring and modernisation. This study investigates the feasibility of leveraging large language models (LLMs) to assist in translating PL/SQL code into Java for the modernised "VTF3"system. By leveraging a dataset comprising 10 PL/SQL-to-Java code pairs and 15 Java classes, which collectively established a domain model for the translated files, multiple LLMs were evaluated. Furthermore, we propose a customized prompting strategy that integrates chain-of-guidance reasoning with n-shot prompting. 
 
 # Testing
+
+### [Automated Testing of COBOL to Java Transformation](https://arxiv.org/abs/2504.10548)
+Verifica l;output di codice tradotto tramite mock di dati
+
+[Riassunto paper](https://docs.google.com/document/d/1PGAkySSCO4RBqTIFrUgP3-kXRDQ4vO7yuUIwgxokVKs/edit?usp=sharing)
+
+### [Quality Evaluation of COBOL to Java Code Transformation](https://arxiv.org/abs/2507.23356)
+Multi approccio per il testing di codice tradotto Cobol to Java
+1.Checker analitici statici
+2.Testing dinamico ( critico nei benchmark)
+3.LLM as judge 
+
+Solo un apporccio non basta! ne servono tanti e non danno neanche risultati promettenti
+
+[Riassunto paper](https://docs.google.com/document/d/1PGAkySSCO4RBqTIFrUgP3-kXRDQ4vO7yuUIwgxokVKs/edit?usp=sharing)
 
 ### [Formal Verification of Transcompiled Mobile Applications Using First-Order Logic](https://www.scopus.com/pages/publications/105026452126?origin=resultslist)
 #### Nel paper viene specificato che il framework è language-agnostic
