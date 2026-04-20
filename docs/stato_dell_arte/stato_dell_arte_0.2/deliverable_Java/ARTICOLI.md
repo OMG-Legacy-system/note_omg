@@ -1,5 +1,5 @@
 # Feature Extraction
-## Model Driven
+## Non Model Driven
 
 ### [Data model reverse engineering in migrating a legacy system to Java](https://www.scopus.com/pages/publications/57749194202?origin=resultslist)
 Central to any legacy migration project is the translationof the data model. Decisions made here will have strongimplications to the rest of the translation. Some legacy languages lack a structured data model, relying instead on explicit programmer control of the overlay of variables. Inthis paper we present our experience inferring a structureddata model in such a language as part of a migration ofeight million lines of code to Java. We discuss the commonidioms of coding that were observed and give an overviewof our solution to this problem.
@@ -15,6 +15,7 @@ Central to any legacy migration project is the translationof the data model. Dec
 ## Non Model Driven
 
 ### [Software Evolution of Legacy Systems](https://eprints.staffs.ac.uk/2770/1/ICEIS_2016_Volume_1.pdf#page=434)
+#### [Link alternativo](https://www.scitepress.org/Papers/2016/57711/57711.pdf)
 we describe a case study of an actual platform
 migration, along with pitfalls and lessons learned. This paper thus aims to give software practitioners—both
 resource-allocating managers and choice-weighing engineers—a general framework with which to tackle software evolution and a specific evolution case study in a frequently-encountered Java-based setup.
@@ -45,6 +46,7 @@ Legacy information systems, such as banking systems, are usually organized aroun
 We propose AlphaTrans, aneuro-symbolic approach to automate repository-level code translation. AlphaTrans translates both sourceand test code, and employs multiple levels of validation to ensure the translation preserves the functionalityof the source program. To break down the problem for LLMs, AlphaTrans leverages program analysis todecompose the program into fragments and translates them in the reverse call order.We leveraged AlphaTrans to translate ten real-world open-source projects consisting of ⟨836, 8575, 2719⟩(application and test) classes, (application and test) methods, and unit tests. AlphaTrans breaks down theseprojects into 17874 fragments and translates the entire repository. 96.40% of the translated fragments aresyntactically correct, and AlphaTrans validates the translations’ runtime behavior and functional correctnessfor 27.03% and 25.14% of the application method fragments
 
 ### [Exploring and Unleashing the Power of Large Language Models in Automated Code Translation](https://dl.acm.org/doi/pdf/10.1145/3660778)
+
 we further propose UniTrans, a Unified code Translation framework,applicable to various LLMs, for unleashing their power in this field. Specifically, UniTrans first crafts aseries of test cases for target programs with the assistance of source programs. Next, it harnesses the aboveauto-generated test cases to augment the code translation and then evaluate their correctness via execution.Afterward, UniTrans further (iteratively) repairs incorrectly translated programs prompted by test caseexecution results.
 
 # Prompt Engineering
@@ -94,6 +96,9 @@ Inthis paper we present our experience inferring a structureddata model in such 
 
 # Benchmark
 ### [Migration Performance for Legacy Data Access](https://ijdc.net/ijdc/article/view/59)
+<h3 style="color: #ff0000">
+    Già inserito sopra
+</h3>
 We present performance data relating to the use of migration in a system we are creating to provideweb access to heterogeneous  document collections in legacy formats. Our goal is to enablesustained access to collections such as these when faced with increasing obsolescence of thenecessary   supporting   applications   and   operating   systems.   Our   system   allows   searching   andbrowsing of the original files within their original contexts utilizing binary images of the originalmedia. The system uses static and dynamic file migration to enhance collection browsing, andemulation to support both the use of legacy programs to access data and long-term preservation ofthe migration software.
 
 # Altro
